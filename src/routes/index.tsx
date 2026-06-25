@@ -281,27 +281,80 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* ACCREDITATIONS */}
+      {/* ACCREDITATIONS — slim strip */}
       <section id="trust" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
-        <div className="mx-auto max-w-6xl px-6 py-10">
-          <div className="text-xs uppercase tracking-wider text-center mb-6" style={{ color: "var(--ink-soft)" }}>
-            Accredited, registered & insured
-          </div>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {ACCREDITATIONS.map((a) => (
-              <div key={a.name} className="flex items-center gap-3 rounded-xl border px-4 py-4" style={{ borderColor: "var(--line)" }}>
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
-                  <ShieldCheck className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
+        <div className="mx-auto max-w-6xl px-6 py-5">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--ink-soft)" }}>
+              Accredited by
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
+              {/* Gas Safe */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#E63027" }}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white"><path d="M12 2s-5 5.5-5 10a5 5 0 0 0 10 0c0-4.5-5-10-5-10zm0 16a3 3 0 0 1-3-3c0-1.6 1-3.4 3-5.6 2 2.2 3 4 3 5.6a3 3 0 0 1-3 3z"/></svg>
                 </div>
-                <div>
-                  <div className="text-[15px] font-semibold">{a.name}</div>
-                  <div className="text-xs" style={{ color: "var(--ink-soft)" }}>{a.ref}</div>
+                <div className="leading-tight">
+                  <div className="text-[13px] font-bold" style={{ color: "#E63027" }}>Gas Safe</div>
+                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Register · 552272</div>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="mt-6 text-center text-xs" style={{ color: "var(--ink-soft)" }}>
-            Trustpilot 4.9 ★ · 412 reviews   ·   £5M public liability insurance
+
+              {/* NAPIT */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#1B2A6B" }}>
+                  <span className="text-[10px] font-extrabold tracking-tight text-white">NAPIT</span>
+                </div>
+                <div className="leading-tight">
+                  <div className="text-[13px] font-bold" style={{ color: "#1B2A6B" }}>NAPIT</div>
+                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Certified</div>
+                </div>
+              </div>
+
+              {/* Stroma */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#1FA0DA" }}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="white" strokeWidth="2.4"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>
+                </div>
+                <div className="leading-tight">
+                  <div className="text-[13px] font-bold" style={{ color: "#1FA0DA" }}>Stroma</div>
+                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Certified</div>
+                </div>
+              </div>
+
+              {/* TrustMark */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#0B2A5B" }}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg>
+                </div>
+                <div className="leading-tight">
+                  <div className="text-[13px] font-bold" style={{ color: "#0B2A5B" }}>TrustMark</div>
+                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Gov. Endorsed</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trustpilot card */}
+            <div className="flex items-center gap-3 rounded-lg border px-3.5 py-2" style={{ borderColor: "var(--line)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
+              <div className="leading-tight">
+                <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Trustpilot</div>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    {[0,1,2,3,4].map((i) => (
+                      <span key={i} className="flex h-3.5 w-3.5 items-center justify-center" style={{ background: "#00B67A" }}>
+                        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5" fill="white"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-[15px] font-extrabold" style={{ color: "var(--ink)" }}>4.8</span>
+                </div>
+              </div>
+              <div className="hidden sm:block h-8 w-px" style={{ background: "var(--line)" }} />
+              <div className="hidden sm:block text-[10px] leading-tight" style={{ color: "var(--ink-soft)" }}>
+                3,528 verified<br/>reviews
+              </div>
+            </div>
           </div>
         </div>
       </section>
