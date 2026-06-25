@@ -138,6 +138,49 @@ const FAQS = [
   },
 ];
 
+type BoroughTile = { name: string; short: string; col: number; row: number; inner: boolean };
+
+const BOROUGH_TILES: BoroughTile[] = [
+  // Outer — Zone 3–4 (next-day)
+  { name: "Enfield",          short: "ENFL",  col: 3, row: 0, inner: false },
+  { name: "Harrow",           short: "HARR",  col: 0, row: 1, inner: false },
+  { name: "Barnet",           short: "BARN",  col: 2, row: 1, inner: false },
+  { name: "Haringey",         short: "HARI",  col: 3, row: 1, inner: false },
+  { name: "Waltham Forest",   short: "WLTH",  col: 4, row: 1, inner: false },
+  { name: "Havering",         short: "HAVE",  col: 6, row: 1, inner: false },
+  { name: "Hillingdon",       short: "HILD",  col: 0, row: 2, inner: false },
+  { name: "Brent",            short: "BREN",  col: 1, row: 2, inner: false },
+  { name: "Redbridge",        short: "REDB",  col: 6, row: 2, inner: false },
+  { name: "Barking & D",      short: "BARK",  col: 7, row: 2, inner: false },
+  { name: "Ealing",           short: "EALG",  col: 1, row: 3, inner: false },
+  { name: "Newham",           short: "NWHM",  col: 7, row: 3, inner: false },
+  { name: "Hounslow",         short: "HOUN",  col: 0, row: 4, inner: false },
+  { name: "Richmond",         short: "RICH",  col: 1, row: 4, inner: false },
+  { name: "Bexley",           short: "BEXL",  col: 8, row: 4, inner: false },
+  { name: "Kingston",         short: "KING",  col: 2, row: 5, inner: false },
+  { name: "Merton",           short: "MERT",  col: 3, row: 5, inner: false },
+  { name: "Croydon",          short: "CROY",  col: 5, row: 5, inner: false },
+  { name: "Bromley",          short: "BROM",  col: 7, row: 5, inner: false },
+  { name: "Sutton",           short: "SUTT",  col: 3, row: 6, inner: false },
+  // Inner — Zone 1–2 (same-day)
+  { name: "Camden",           short: "CAMDN", col: 3, row: 2, inner: true },
+  { name: "Islington",        short: "ISLN",  col: 4, row: 2, inner: true },
+  { name: "Hackney",          short: "HACK",  col: 5, row: 2, inner: true },
+  { name: "H&F",              short: "H&F",   col: 2, row: 3, inner: true },
+  { name: "K&C",              short: "K&C",   col: 3, row: 3, inner: true },
+  { name: "Westminster",      short: "WSTM",  col: 4, row: 3, inner: true },
+  { name: "City",             short: "CITY",  col: 5, row: 3, inner: true },
+  { name: "Tower Hamlets",    short: "TWRH",  col: 6, row: 3, inner: true },
+  { name: "Greenwich",        short: "GRNW",  col: 8, row: 3, inner: true },
+  { name: "Wandsworth",       short: "WAND",  col: 3, row: 4, inner: true },
+  { name: "Lambeth",          short: "LAMB",  col: 4, row: 4, inner: true },
+  { name: "Southwark",        short: "SWRK",  col: 5, row: 4, inner: true },
+  { name: "Lewisham",         short: "LEWI",  col: 6, row: 4, inner: true },
+];
+
+const INNER_BOROUGHS = BOROUGH_TILES.filter((b) => b.inner).map((b) => b.name);
+const OUTER_BOROUGHS = BOROUGH_TILES.filter((b) => !b.inner).map((b) => b.name);
+
 const CHECKLIST = [
   "Clear access to the boiler, gas meter and consumer unit",
   "Pilot lights lit and gas supply turned on",
@@ -188,6 +231,7 @@ function DirectionA() {
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
             <a href="#offers" className="hover:text-[var(--navy)]">Offers</a>
             <a href="#how" className="hover:text-[var(--navy)]">How it works</a>
+            <a href="#coverage" className="hover:text-[var(--navy)]">Coverage</a>
             <a href="#faq" className="hover:text-[var(--navy)]">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -388,6 +432,113 @@ function DirectionA() {
                 <div className="mt-1.5 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* COVERAGE */}
+      <section id="coverage" style={{ background: "var(--navy-deep)" }}>
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <div className="mb-10">
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald)" }}>Service area</div>
+            <h2 className="mt-2 text-[36px] font-bold tracking-tight text-white leading-tight">
+              All 32 London boroughs covered.
+            </h2>
+            <p className="mt-3 text-[15px] max-w-xl" style={{ color: "rgba(255,255,255,0.55)" }}>
+              Engineers stationed across the city — inner boroughs same-day, outer boroughs next-day. M25 fringe available on request.
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+            {/* MAP */}
+            <div>
+              <div className="overflow-x-auto rounded-xl border" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+                <div className="p-5 min-w-[460px]">
+                  <svg viewBox="0 0 492 268" xmlns="http://www.w3.org/2000/svg" className="w-full">
+                    {BOROUGH_TILES.map((b) => {
+                      const x = b.col * 54 + 3;
+                      const y = b.row * 38 + 3;
+                      return (
+                        <g key={b.name}>
+                          <rect
+                            x={x} y={y} width={50} height={33}
+                            rx={4}
+                            style={{
+                              fill: b.inner
+                                ? "var(--emerald)"
+                                : "rgba(255,255,255,0.10)",
+                              stroke: b.inner
+                                ? "rgba(255,255,255,0.25)"
+                                : "rgba(255,255,255,0.12)",
+                              strokeWidth: 1,
+                            }}
+                          />
+                          <text
+                            x={x + 25} y={y + 11.5}
+                            fontSize="6.2"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            style={{
+                              fill: b.inner ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.65)",
+                              fontFamily: "system-ui, sans-serif",
+                              fontWeight: "700",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {b.short}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+              {/* Legend */}
+              <div className="mt-4 flex flex-wrap gap-6 text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-7 rounded-sm" style={{ background: "var(--emerald)" }} />
+                  <span>Same-day (Zone 1–2)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-7 rounded-sm border" style={{ background: "rgba(255,255,255,0.10)", borderColor: "rgba(255,255,255,0.18)" }} />
+                  <span>Next-day (Zone 3–4)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ZONE BREAKDOWN */}
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[13px] font-semibold text-white">Zone 1–2</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5" style={{ background: "var(--emerald)", color: "rgba(0,0,0,0.75)" }}>Same-day</span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  {INNER_BOROUGHS.join(" · ")}
+                </p>
+              </div>
+
+              <div className="rounded-xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[13px] font-semibold text-white">Zone 3–4</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5" style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>Next-day</span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  {OUTER_BOROUGHS.join(" · ")}
+                </p>
+              </div>
+
+              <div className="rounded-xl p-5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[13px] font-semibold text-white">M25 fringe</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}>On request</span>
+                </div>
+                <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>Watford, Romford, Guildford and beyond</p>
+                <a href="tel:02034881555" className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--emerald)" }}>
+                  Call 020 3488 1555 →
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
