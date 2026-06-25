@@ -219,7 +219,7 @@ function DirectionA() {
 
           <div className="mt-8 flex flex-wrap items-center gap-6 text-sm" style={{ color: "var(--ink-soft)" }}>
             <Stat n="12,000+" l="certificates issued" />
-            <Stat n="4.9/5" l="on Trustpilot" />
+            <Stat n="4.7/5" l="on Trustpilot" />
             <Stat n="14 yrs" l="in business" />
           </div>
         </div>
@@ -278,28 +278,28 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* ACCREDITATIONS, slim strip with real logos */}
+      {/* ACCREDITATIONS */}
       <section id="trust" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
-        <div className="mx-auto max-w-6xl px-6 py-5">
-          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+        <div className="mx-auto max-w-6xl px-6 py-7">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--ink-soft)" }}>
               Accredited by
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
-              <img src={gasSafeAsset.url} alt="Gas Safe Register 552272" className="h-10 w-auto object-contain" />
-              <img src={napitAsset.url} alt="NAPIT Certified" className="h-10 w-auto object-contain" />
-              <img src={stromaAsset.url} alt="Stroma Certified" className="h-10 w-auto object-contain" />
-              <img src={trustmarkAsset.url} alt="TrustMark Government Endorsed Quality" className="h-10 w-auto object-contain" />
+            <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
+              <AccredBadge logo={gasSafeAsset.url} name="Gas Safe" sub="Reg. No. 552272" />
+              <AccredBadge logo={napitAsset.url} name="NAPIT" sub="Certified" />
+              <AccredBadge logo={stromaAsset.url} name="Stroma" sub="Certified" />
+              <AccredBadge logo={trustmarkAsset.url} name="TrustMark" sub="Gov. Endorsed" />
             </div>
 
             {/* Trustpilot card */}
-            <div className="flex items-center gap-3 rounded-lg border px-3.5 py-2" style={{ borderColor: "var(--line)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
-              <img src={trustpilotAsset.url} alt="Trustpilot rated" className="h-9 w-auto object-contain" />
-              <div className="hidden sm:block h-8 w-px" style={{ background: "var(--line)" }} />
+            <div className="flex items-center gap-3 rounded-lg border px-4 py-3" style={{ borderColor: "var(--line)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
+              <img src={trustpilotAsset.url} alt="Trustpilot" className="h-10 w-auto object-contain" />
+              <div className="hidden sm:block h-9 w-px" style={{ background: "var(--line)" }} />
               <div className="hidden sm:block leading-tight">
-                <div className="text-[15px] font-extrabold" style={{ color: "var(--ink)" }}>4.9 out of 5</div>
-                <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>3,528 verified reviews</div>
+                <div className="text-[16px] font-extrabold" style={{ color: "var(--ink)" }}>4.7 out of 5</div>
+                <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>3,528 verified reviews</div>
               </div>
             </div>
           </div>
@@ -467,7 +467,7 @@ function DirectionA() {
             <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Rated on Trustpilot</div>
             <div className="mt-1 flex items-center justify-center gap-2">
               <span style={{ color: "var(--emerald-deep)" }}>★★★★★</span>
-              <span className="text-2xl font-bold">4.9</span>
+              <span className="text-2xl font-bold">4.7</span>
             </div>
             <div className="text-xs" style={{ color: "var(--ink-soft)" }}>3,528 reviews</div>
           </div>
@@ -552,6 +552,18 @@ function DirectionA() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function AccredBadge({ logo, name, sub }: { logo: string; name: string; sub: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <img src={logo} alt={`${name} ${sub}`} className="h-14 w-auto object-contain" />
+      <div className="leading-tight">
+        <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{name}</div>
+        <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>{sub}</div>
+      </div>
     </div>
   );
 }
