@@ -45,7 +45,7 @@ type Service = {
   turn: string;
   context: string;
   valid: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 };
 
 const SERVICES: Service[] = [
