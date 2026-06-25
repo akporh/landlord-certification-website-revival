@@ -7,7 +7,6 @@ import {
   Plug,
   Droplets,
   ShieldAlert,
-  ShieldCheck,
   CheckCircle2,
   ClipboardCheck,
   CalendarClock,
@@ -18,17 +17,22 @@ import {
   ChevronDown,
   ArrowRight,
 } from "lucide-react";
+import gasSafeAsset from "@/assets/gas-safe.jpg.asset.json";
+import napitAsset from "@/assets/napit.jpg.asset.json";
+import stromaAsset from "@/assets/stroma.jpg.asset.json";
+import trustmarkAsset from "@/assets/trustmark.jpg.asset.json";
+import trustpilotAsset from "@/assets/trustpilot.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Landlord Certificates — Gas, Electric & EPC, booked in 60 seconds" },
+      { title: "Landlord Certificates · Gas, Electric & EPC booked in 60 seconds" },
       {
         name: "description",
         content:
-          "Gas Safety, EICR, EPC, PAT and Legionella certificates for London landlords. Gas Safe, NAPIT, Stroma & TrustMark accredited. 14 years trading, 12,000+ certificates issued.",
+          "Gas Safety, EICR, EPC, PAT and Legionella certificates for London landlords. Gas Safe, NAPIT, Stroma and TrustMark accredited. 14 years trading.",
       },
-      { property: "og:title", content: "Landlord Certificates — booked in 60 seconds" },
+      { property: "og:title", content: "Landlord Certificates, booked in 60 seconds" },
       {
         property: "og:description",
         content: "London's calmest way to stay compliant. Certified engineers, fixed prices, next-day slots.",
@@ -52,7 +56,7 @@ const SERVICES: Service[] = [
   {
     code: "CP12",
     name: "Gas Safety (CP12)",
-    price: 60,
+    price: 40,
     turn: "Same day",
     context: "Legally required for every rental with a gas appliance. Renewed annually before expiry.",
     valid: "Valid 12 months",
@@ -61,7 +65,7 @@ const SERVICES: Service[] = [
   {
     code: "EICR",
     name: "Electrical (EICR)",
-    price: 120,
+    price: 70,
     turn: "24 hrs",
     context: "Mandatory electrical inspection for all private rentals in England since 2020.",
     valid: "Valid 5 years",
@@ -70,18 +74,18 @@ const SERVICES: Service[] = [
   {
     code: "EPC",
     name: "Energy (EPC)",
-    price: 60,
+    price: 65,
     turn: "48 hrs",
-    context: "Required before letting. Minimum rating E — rising to C from 2028 for new tenancies.",
+    context: "Required before letting. Minimum rating E, rising to C from 2028 for new tenancies.",
     valid: "Valid 10 years",
     icon: Leaf,
   },
   {
     code: "PAT",
     name: "PAT Testing",
-    price: 60,
+    price: 55,
     turn: "Same day",
-    context: "Portable appliance testing — best practice for furnished lets and HMOs.",
+    context: "Portable appliance testing, best practice for furnished lets and HMOs.",
     valid: "Recommended yearly",
     icon: Plug,
   },
@@ -90,7 +94,7 @@ const SERVICES: Service[] = [
     name: "Legionella Risk",
     price: 65,
     turn: "48 hrs",
-    context: "Risk assessment of the water system — landlord's duty under HSE guidance.",
+    context: "Risk assessment of the water system, a landlord's duty under HSE guidance.",
     valid: "Review every 2 years",
     icon: Droplets,
   },
@@ -106,30 +110,23 @@ const SERVICES: Service[] = [
 ];
 
 const BUNDLES = [
-  { name: "Gas + Electric", codes: ["CP12", "EICR"], save: "Save £18" },
-  { name: "New Tenancy Pack", codes: ["CP12", "EICR", "EPC"], save: "Save £35" },
-  { name: "HMO Compliance", codes: ["CP12", "EICR", "EPC", "FIRE", "LEG"], save: "Save £60" },
-];
-
-const ACCREDITATIONS = [
-  { name: "Gas Safe", ref: "552272" },
-  { name: "NAPIT", ref: "Registered" },
-  { name: "Stroma", ref: "Certified" },
-  { name: "TrustMark", ref: "Gov-endorsed" },
+  { name: "Gas + Electric", codes: ["CP12", "EICR"], save: "Save £11" },
+  { name: "New Tenancy Pack", codes: ["CP12", "EICR", "EPC"], save: "Save £22" },
+  { name: "HMO Compliance", codes: ["CP12", "EICR", "EPC", "FIRE", "LEG"], save: "Save £40" },
 ];
 
 const FAQS = [
   {
     q: "How quickly can an engineer attend?",
-    a: "Most London bookings get a same-day or next-day slot. Choose your preferred window at checkout — we confirm by SMS within 15 minutes.",
+    a: "Most London bookings get a same-day or next-day slot. Choose your preferred window at checkout and we confirm by SMS within 15 minutes.",
   },
   {
     q: "What happens if my property fails the inspection?",
-    a: "You'll receive a detailed report of any C1/C2 issues with transparent remedial quotes. No pressure — you can use your own contractor and we'll re-issue the certificate free once work is signed off.",
+    a: "You receive a detailed report of any C1/C2 issues with transparent remedial quotes. No pressure, you can use your own contractor and we re-issue the certificate free once work is signed off.",
   },
   {
     q: "Do you cover all London boroughs?",
-    a: "Yes — all 32 London boroughs plus the City. We also cover Zones 1–6 surrounding areas including Croydon, Bromley, Watford and Romford.",
+    a: "Yes, all 32 London boroughs plus the City. We also cover Zones 1 to 6 surrounding areas including Croydon, Bromley, Watford and Romford.",
   },
   {
     q: "Can I store and share certificates with tenants and agents?",
@@ -137,14 +134,14 @@ const FAQS = [
   },
   {
     q: "Do you offer discounts for portfolios or agents?",
-    a: "Yes — 15% off for 5+ properties and dedicated account management for letting agents. Get in touch for a tailored quote.",
+    a: "Yes, 15% off for 5+ properties and dedicated account management for letting agents. Get in touch for a tailored quote.",
   },
 ];
 
 const CHECKLIST = [
   "Clear access to the boiler, gas meter and consumer unit",
   "Pilot lights lit and gas supply turned on",
-  "All rooms accessible — including loft if applicable",
+  "All rooms accessible, including loft if applicable",
   "Pets secured during the visit",
   "Previous certificates handy (we'll cross-check)",
   "Someone aged 18+ on site, or keys with the concierge",
@@ -210,7 +207,7 @@ function DirectionA() {
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
             <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
-            Gas Safe · NAPIT · Stroma · TrustMark — 14 years in London
+            Gas Safe · NAPIT · Stroma · TrustMark · 14 years in London
           </div>
           <h1 className="mt-6 text-[44px] font-bold leading-[1.05] tracking-tight lg:text-[60px]">
             Landlord certificates,<br />
@@ -281,7 +278,7 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* ACCREDITATIONS — slim strip */}
+      {/* ACCREDITATIONS, slim strip with real logos */}
       <section id="trust" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
@@ -289,70 +286,20 @@ function DirectionA() {
               Accredited by
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
-              {/* Gas Safe */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#E63027" }}>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white"><path d="M12 2s-5 5.5-5 10a5 5 0 0 0 10 0c0-4.5-5-10-5-10zm0 16a3 3 0 0 1-3-3c0-1.6 1-3.4 3-5.6 2 2.2 3 4 3 5.6a3 3 0 0 1-3 3z"/></svg>
-                </div>
-                <div className="leading-tight">
-                  <div className="text-[13px] font-bold" style={{ color: "#E63027" }}>Gas Safe</div>
-                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Register · 552272</div>
-                </div>
-              </div>
-
-              {/* NAPIT */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#1B2A6B" }}>
-                  <span className="text-[10px] font-extrabold tracking-tight text-white">NAPIT</span>
-                </div>
-                <div className="leading-tight">
-                  <div className="text-[13px] font-bold" style={{ color: "#1B2A6B" }}>NAPIT</div>
-                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Certified</div>
-                </div>
-              </div>
-
-              {/* Stroma */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#1FA0DA" }}>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="white" strokeWidth="2.4"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>
-                </div>
-                <div className="leading-tight">
-                  <div className="text-[13px] font-bold" style={{ color: "#1FA0DA" }}>Stroma</div>
-                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Certified</div>
-                </div>
-              </div>
-
-              {/* TrustMark */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: "#0B2A5B" }}>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/></svg>
-                </div>
-                <div className="leading-tight">
-                  <div className="text-[13px] font-bold" style={{ color: "#0B2A5B" }}>TrustMark</div>
-                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>Gov. Endorsed</div>
-                </div>
-              </div>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              <img src={gasSafeAsset.url} alt="Gas Safe Register 552272" className="h-10 w-auto object-contain" />
+              <img src={napitAsset.url} alt="NAPIT Certified" className="h-10 w-auto object-contain" />
+              <img src={stromaAsset.url} alt="Stroma Certified" className="h-10 w-auto object-contain" />
+              <img src={trustmarkAsset.url} alt="TrustMark Government Endorsed Quality" className="h-10 w-auto object-contain" />
             </div>
 
             {/* Trustpilot card */}
             <div className="flex items-center gap-3 rounded-lg border px-3.5 py-2" style={{ borderColor: "var(--line)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
-              <div className="leading-tight">
-                <div className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Trustpilot</div>
-                <div className="flex items-center gap-1.5">
-                  <div className="flex gap-0.5">
-                    {[0,1,2,3,4].map((i) => (
-                      <span key={i} className="flex h-3.5 w-3.5 items-center justify-center" style={{ background: "#00B67A" }}>
-                        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5" fill="white"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
-                      </span>
-                    ))}
-                  </div>
-                  <span className="text-[15px] font-extrabold" style={{ color: "var(--ink)" }}>4.8</span>
-                </div>
-              </div>
+              <img src={trustpilotAsset.url} alt="Trustpilot rated" className="h-9 w-auto object-contain" />
               <div className="hidden sm:block h-8 w-px" style={{ background: "var(--line)" }} />
-              <div className="hidden sm:block text-[10px] leading-tight" style={{ color: "var(--ink-soft)" }}>
-                3,528 verified<br/>reviews
+              <div className="hidden sm:block leading-tight">
+                <div className="text-[15px] font-extrabold" style={{ color: "var(--ink)" }}>4.9 out of 5</div>
+                <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>3,528 verified reviews</div>
               </div>
             </div>
           </div>
@@ -400,43 +347,45 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* HOW */}
+      {/* HOW, tightened layout: icon + number on same line */}
       <section id="how" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
-        <div className="mx-auto max-w-6xl px-6 py-24">
+        <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="max-w-2xl text-[36px] font-bold leading-tight tracking-tight">
             The calmest way to stay compliant.
           </h2>
-          <p className="mt-4 max-w-xl text-[15px]" style={{ color: "var(--ink-soft)" }}>
+          <p className="mt-3 max-w-xl text-[15px]" style={{ color: "var(--ink-soft)" }}>
             Three steps. No phone tag, no paper trail, no surprise fees.
           </p>
-          <div className="mt-12 grid gap-10 md:grid-cols-3">
+          <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               {
                 n: "01",
                 t: "Choose & quote",
-                d: "Pick the certificates you need above for a live price — or call us and we'll find the earliest slot at your property.",
+                d: "Pick the certificates you need above for a live price, or call us and we'll find the earliest slot at your property.",
                 icon: ClipboardCheck,
               },
               {
                 n: "02",
                 t: "Engineer visits",
-                d: "A Gas Safe or NAPIT-registered engineer attends — same-day and next-day slots across every London borough.",
+                d: "A Gas Safe or NAPIT-registered engineer attends, with same-day and next-day slots across every London borough.",
                 icon: CalendarClock,
               },
               {
                 n: "03",
                 t: "Certificate delivered",
-                d: "Your signed PDF arrives by email the same day, stored securely in your landlord portal — share it with tenants or agents in one click.",
+                d: "Your signed PDF arrives by email the same day, stored securely in your landlord portal and shareable in one click.",
                 icon: Mail,
               },
             ].map(({ n, t, d, icon: Icon }) => (
               <div key={n}>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
-                  <Icon className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
+                    <Icon className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
+                  </div>
+                  <div className="text-sm font-bold tracking-wider" style={{ color: "var(--emerald-deep)" }}>{n}</div>
                 </div>
-                <div className="mt-5 text-sm font-semibold" style={{ color: "var(--emerald-deep)" }}>{n}</div>
-                <div className="mt-1 text-lg font-semibold">{t}</div>
-                <div className="mt-2 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d}</div>
+                <div className="mt-4 text-lg font-semibold">{t}</div>
+                <div className="mt-1.5 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d}</div>
               </div>
             ))}
           </div>
@@ -486,7 +435,7 @@ function DirectionA() {
             <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
             <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
             <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
-              A little prep means our engineer is in and out faster — and your certificate lands in your inbox the same day.
+              A little prep means our engineer is in and out faster, and your certificate lands in your inbox the same day.
             </p>
             <a href="#" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--navy)" }}>
               Download the full checklist (PDF) <ArrowRight className="h-3.5 w-3.5" />
@@ -526,8 +475,8 @@ function DirectionA() {
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {[
-            { q: "Been using Landlord Certificates for our Gas Safeties and boiler services for years. Both the admin team and their engineers are professional and efficient — a company you can genuinely trust.", a: "Portfolio Landlord" },
-            { q: "Great service — excellent communication and timely arrival. Efficient boiler service and comprehensive review of gas safety requirements. Would highly recommend to any landlord.", a: "London Landlord" },
+            { q: "Been using Landlord Certificates for our Gas Safeties and boiler services for years. Both the admin team and their engineers are professional and efficient, a company you can genuinely trust.", a: "Portfolio Landlord" },
+            { q: "Great service, excellent communication and timely arrival. Efficient boiler service and comprehensive review of gas safety requirements. Would highly recommend to any landlord.", a: "London Landlord" },
             { q: "I have used Landlord Certificates repeatedly over the years and find them to be highly efficient and reliable. Will continue using them for the foreseeable future without hesitation.", a: "Buy-to-Let Landlord" },
           ].map(({ q, a }) => (
             <figure key={a} className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--line)" }}>
@@ -551,7 +500,7 @@ function DirectionA() {
             <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
               Still unsure? Call us on{" "}
               <a href="tel:02034881555" className="font-semibold" style={{ color: "var(--navy)" }}>020 3488 1555</a>{" "}
-              — a real person, weekdays 8am–7pm.
+              for a real person, weekdays 8am to 7pm.
             </p>
           </div>
           <div className="divide-y" style={{ borderColor: "var(--line)" }}>
