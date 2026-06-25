@@ -299,7 +299,7 @@ function DirectionA() {
               <div className="hidden sm:block h-9 w-px" style={{ background: "var(--line)" }} />
               <div className="hidden sm:block leading-tight">
                 <div className="text-[16px] font-extrabold" style={{ color: "var(--ink)" }}>4.7 out of 5</div>
-                <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>3,528 verified reviews</div>
+                <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>3,554 verified reviews</div>
               </div>
             </div>
           </div>
@@ -460,7 +460,7 @@ function DirectionA() {
               What landlords say
             </div>
             <h2 className="mt-4 text-[40px] font-bold tracking-tight leading-[1.05]" style={{ color: "var(--navy-deep)" }}>
-              Trusted by 3,528<br />London landlords.
+              Trusted by 3,554<br />London landlords.
             </h2>
           </div>
           <div className="rounded-xl border bg-white px-6 py-4 text-center" style={{ borderColor: "var(--line)" }}>
@@ -469,7 +469,7 @@ function DirectionA() {
               <span style={{ color: "var(--emerald-deep)" }}>★★★★★</span>
               <span className="text-2xl font-bold">4.7</span>
             </div>
-            <div className="text-xs" style={{ color: "var(--ink-soft)" }}>3,528 reviews</div>
+            <div className="text-xs" style={{ color: "var(--ink-soft)" }}>3,554 reviews</div>
           </div>
         </div>
 
