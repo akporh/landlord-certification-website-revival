@@ -1,5 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+  Flame,
+  Zap,
+  Leaf,
+  Plug,
+  Droplets,
+  ShieldAlert,
+  ShieldCheck,
+  CheckCircle2,
+  ClipboardCheck,
+  CalendarClock,
+  Mail,
+  LogIn,
+  Phone,
+  Tag,
+  ChevronDown,
+  ArrowRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -8,7 +26,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Gas Safety, EICR, EPC, PAT and Legionella certificates for London landlords. Gas Safe registered, 14 years trading, 12,000+ certificates issued. Instant online booking.",
+          "Gas Safety, EICR, EPC, PAT and Legionella certificates for London landlords. Gas Safe, NAPIT, Stroma & TrustMark accredited. 14 years trading, 12,000+ certificates issued.",
       },
       { property: "og:title", content: "Landlord Certificates — booked in 60 seconds" },
       {
@@ -20,18 +38,122 @@ export const Route = createFileRoute("/")({
   component: DirectionA,
 });
 
-const SERVICES = [
-  { code: "CP12", name: "Gas Safety (CP12)", price: 60, turn: "Same day" },
-  { code: "EICR", name: "Electrical (EICR)", price: 120, turn: "24 hrs" },
-  { code: "EPC", name: "Energy (EPC)", price: 60, turn: "48 hrs" },
-  { code: "PAT", name: "PAT Testing", price: 60, turn: "Same day" },
-  { code: "LEG", name: "Legionella Risk", price: 65, turn: "48 hrs" },
-  { code: "FIRE", name: "Fire Risk", price: 95, turn: "48 hrs" },
+type Service = {
+  code: string;
+  name: string;
+  price: number;
+  turn: string;
+  context: string;
+  valid: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+};
+
+const SERVICES: Service[] = [
+  {
+    code: "CP12",
+    name: "Gas Safety (CP12)",
+    price: 60,
+    turn: "Same day",
+    context: "Legally required for every rental with a gas appliance. Renewed annually before expiry.",
+    valid: "Valid 12 months",
+    icon: Flame,
+  },
+  {
+    code: "EICR",
+    name: "Electrical (EICR)",
+    price: 120,
+    turn: "24 hrs",
+    context: "Mandatory electrical inspection for all private rentals in England since 2020.",
+    valid: "Valid 5 years",
+    icon: Zap,
+  },
+  {
+    code: "EPC",
+    name: "Energy (EPC)",
+    price: 60,
+    turn: "48 hrs",
+    context: "Required before letting. Minimum rating E — rising to C from 2028 for new tenancies.",
+    valid: "Valid 10 years",
+    icon: Leaf,
+  },
+  {
+    code: "PAT",
+    name: "PAT Testing",
+    price: 60,
+    turn: "Same day",
+    context: "Portable appliance testing — best practice for furnished lets and HMOs.",
+    valid: "Recommended yearly",
+    icon: Plug,
+  },
+  {
+    code: "LEG",
+    name: "Legionella Risk",
+    price: 65,
+    turn: "48 hrs",
+    context: "Risk assessment of the water system — landlord's duty under HSE guidance.",
+    valid: "Review every 2 years",
+    icon: Droplets,
+  },
+  {
+    code: "FIRE",
+    name: "Fire Risk",
+    price: 95,
+    turn: "48 hrs",
+    context: "Required for HMOs and communal areas under the Fire Safety Order.",
+    valid: "Review annually",
+    icon: ShieldAlert,
+  },
+];
+
+const BUNDLES = [
+  { name: "Gas + Electric", codes: ["CP12", "EICR"], save: "Save £18" },
+  { name: "New Tenancy Pack", codes: ["CP12", "EICR", "EPC"], save: "Save £35" },
+  { name: "HMO Compliance", codes: ["CP12", "EICR", "EPC", "FIRE", "LEG"], save: "Save £60" },
+];
+
+const ACCREDITATIONS = [
+  { name: "Gas Safe", ref: "552272" },
+  { name: "NAPIT", ref: "Registered" },
+  { name: "Stroma", ref: "Certified" },
+  { name: "TrustMark", ref: "Gov-endorsed" },
+];
+
+const FAQS = [
+  {
+    q: "How quickly can an engineer attend?",
+    a: "Most London bookings get a same-day or next-day slot. Choose your preferred window at checkout — we confirm by SMS within 15 minutes.",
+  },
+  {
+    q: "What happens if my property fails the inspection?",
+    a: "You'll receive a detailed report of any C1/C2 issues with transparent remedial quotes. No pressure — you can use your own contractor and we'll re-issue the certificate free once work is signed off.",
+  },
+  {
+    q: "Do you cover all London boroughs?",
+    a: "Yes — all 32 London boroughs plus the City. We also cover Zones 1–6 surrounding areas including Croydon, Bromley, Watford and Romford.",
+  },
+  {
+    q: "Can I store and share certificates with tenants and agents?",
+    a: "Every certificate is stored in your free landlord portal. One click to email the PDF to a tenant, agent or local authority.",
+  },
+  {
+    q: "Do you offer discounts for portfolios or agents?",
+    a: "Yes — 15% off for 5+ properties and dedicated account management for letting agents. Get in touch for a tailored quote.",
+  },
+];
+
+const CHECKLIST = [
+  "Clear access to the boiler, gas meter and consumer unit",
+  "Pilot lights lit and gas supply turned on",
+  "All rooms accessible — including loft if applicable",
+  "Pets secured during the visit",
+  "Previous certificates handy (we'll cross-check)",
+  "Someone aged 18+ on site, or keys with the concierge",
 ];
 
 function DirectionA() {
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [postcode, setPostcode] = useState("");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const toggle = (code: string) =>
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
@@ -49,6 +171,15 @@ function DirectionA() {
       }}
       className="min-h-screen"
     >
+      {/* OFFER BAR */}
+      <div className="text-white text-center text-xs py-2 px-4" style={{ background: "var(--navy-deep)" }}>
+        <span className="inline-flex items-center gap-2">
+          <Tag className="h-3.5 w-3.5" style={{ color: "var(--emerald)" }} />
+          <strong>June offer:</strong> Save 15% on any 2+ certificates · use code{" "}
+          <span className="font-mono px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.1)" }}>BUNDLE15</span>
+        </span>
+      </div>
+
       {/* NAV */}
       <header className="sticky top-0 z-40 border-b" style={{ background: "rgba(253,252,248,0.85)", backdropFilter: "blur(12px)", borderColor: "var(--line)" }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -58,12 +189,17 @@ function DirectionA() {
           </div>
           <nav className="hidden gap-7 text-sm md:flex" style={{ color: "var(--ink-soft)" }}>
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
+            <a href="#offers" className="hover:text-[var(--navy)]">Offers</a>
             <a href="#how" className="hover:text-[var(--navy)]">How it works</a>
-            <a href="#trust" className="hover:text-[var(--navy)]">Why us</a>
             <a href="#faq" className="hover:text-[var(--navy)]">FAQ</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <a href="tel:02034881555" className="hidden text-sm font-medium md:block" style={{ color: "var(--ink)" }}>020 3488 1555</a>
+          <div className="flex items-center gap-2">
+            <a href="tel:02034881555" className="hidden text-sm font-medium md:inline-flex items-center gap-1.5" style={{ color: "var(--ink)" }}>
+              <Phone className="h-3.5 w-3.5" /> 020 3488 1555
+            </a>
+            <a href="/portal" className="hidden md:inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium" style={{ borderColor: "var(--line)", color: "var(--ink)" }}>
+              <LogIn className="h-3.5 w-3.5" /> Sign in
+            </a>
             <a href="#quote" className="rounded-md px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>Get quote</a>
           </div>
         </div>
@@ -74,7 +210,7 @@ function DirectionA() {
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
             <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
-            Gas Safe registered · NICEIC approved · 14 years in London
+            Gas Safe · NAPIT · Stroma · TrustMark — 14 years in London
           </div>
           <h1 className="mt-6 text-[44px] font-bold leading-[1.05] tracking-tight lg:text-[60px]">
             Landlord certificates,<br />
@@ -99,6 +235,7 @@ function DirectionA() {
           <div className="mt-5 grid grid-cols-2 gap-2">
             {SERVICES.map((s) => {
               const on = selected.includes(s.code);
+              const Icon = s.icon;
               return (
                 <button
                   key={s.code}
@@ -109,8 +246,11 @@ function DirectionA() {
                     background: on ? "color-mix(in oklab, var(--emerald) 8%, white)" : "white",
                   }}
                 >
-                  <div className="text-[13px] font-semibold">{s.name}</div>
-                  <div className="mt-0.5 text-xs" style={{ color: "var(--ink-soft)" }}>from £{s.price} · {s.turn}</div>
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-4 w-4" style={{ color: on ? "var(--emerald-deep)" : "var(--ink-soft)" }} />
+                    <div className="text-[13px] font-semibold">{s.name}</div>
+                  </div>
+                  <div className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>from £{s.price} · {s.turn}</div>
                 </button>
               );
             })}
@@ -141,87 +281,253 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* TRUST STRIP */}
+      {/* ACCREDITATIONS */}
       <section id="trust" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 py-10 md:grid-cols-4">
-          {[
-            ["Gas Safe", "552272"],
-            ["NICEIC", "Approved Contractor"],
-            ["Trustpilot", "4.9 ★ · 412 reviews"],
-            ["Insured", "£5M public liability"],
-          ].map(([k, v]) => (
-            <div key={k}>
-              <div className="text-xs uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>{k}</div>
-              <div className="mt-1 text-[15px] font-semibold">{v}</div>
-            </div>
-          ))}
+        <div className="mx-auto max-w-6xl px-6 py-10">
+          <div className="text-xs uppercase tracking-wider text-center mb-6" style={{ color: "var(--ink-soft)" }}>
+            Accredited, registered & insured
+          </div>
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            {ACCREDITATIONS.map((a) => (
+              <div key={a.name} className="flex items-center gap-3 rounded-xl border px-4 py-4" style={{ borderColor: "var(--line)" }}>
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
+                  <ShieldCheck className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
+                </div>
+                <div>
+                  <div className="text-[15px] font-semibold">{a.name}</div>
+                  <div className="text-xs" style={{ color: "var(--ink-soft)" }}>{a.ref}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 text-center text-xs" style={{ color: "var(--ink-soft)" }}>
+            Trustpilot 4.9 ★ · 412 reviews   ·   £5M public liability insurance
+          </div>
+        </div>
+      </section>
+
+      {/* OFFERS / BUNDLES */}
+      <section id="offers" className="mx-auto max-w-6xl px-6 py-20">
+        <div className="flex items-end justify-between flex-wrap gap-4">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>This month</div>
+            <h2 className="mt-2 text-[32px] font-bold tracking-tight">Bundle and save up to 20%.</h2>
+          </div>
+          <a href="#quote" className="text-sm font-semibold inline-flex items-center gap-1" style={{ color: "var(--navy)" }}>
+            Build your own bundle <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {BUNDLES.map((b) => {
+            const items = SERVICES.filter((s) => b.codes.includes(s.code));
+            const sum = items.reduce((a, c) => a + c.price, 0);
+            return (
+              <div key={b.name} className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--line)" }}>
+                <div className="flex items-center justify-between">
+                  <div className="text-[15px] font-semibold">{b.name}</div>
+                  <span className="text-xs font-semibold rounded-full px-2 py-0.5" style={{ background: "color-mix(in oklab, var(--emerald) 14%, white)", color: "var(--emerald-deep)" }}>{b.save}</span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {items.map((i) => {
+                    const Icon = i.icon;
+                    return (
+                      <span key={i.code} className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
+                        <Icon className="h-3 w-3" /> {i.code}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className="mt-5 flex items-end justify-between border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                  <div className="text-2xl font-bold" style={{ color: "var(--navy-deep)" }}>£{sum - Number(b.save.replace(/\D/g, ""))}</div>
+                  <a href="#quote" className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Choose →</a>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
       {/* HOW */}
-      <section id="how" className="mx-auto max-w-6xl px-6 py-24">
-        <h2 className="max-w-2xl text-[36px] font-bold leading-tight tracking-tight">
-          The calmest way to stay compliant.
-        </h2>
-        <div className="mt-12 grid gap-10 md:grid-cols-3">
-          {[
-            ["01", "Choose & quote", "Pick the certificates you need. Live price, no calls."],
-            ["02", "Book a slot", "Same-day and next-day appointments across all London boroughs."],
-            ["03", "Certificate by email", "Digitally signed PDF in your inbox within 24 hours of the visit."],
-          ].map(([n, t, d]) => (
-            <div key={n}>
-              <div className="text-sm font-semibold" style={{ color: "var(--emerald-deep)" }}>{n}</div>
-              <div className="mt-2 text-lg font-semibold">{t}</div>
-              <div className="mt-2 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* SERVICES */}
-      <section id="services" className="border-t" style={{ borderColor: "var(--line)", background: "white" }}>
+      <section id="how" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-24">
-          <div className="flex items-end justify-between">
-            <h2 className="text-[36px] font-bold tracking-tight">Every certificate a London landlord needs.</h2>
-          </div>
-          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border md:grid-cols-2 lg:grid-cols-3" style={{ borderColor: "var(--line)", background: "var(--line)" }}>
-            {SERVICES.map((s) => (
-              <div key={s.code} className="bg-white p-7">
-                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>{s.code}</div>
-                <div className="mt-2 text-lg font-semibold">{s.name}</div>
-                <div className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>{s.turn} turnaround</div>
-                <div className="mt-6 flex items-end justify-between">
-                  <div>
-                    <div className="text-xs" style={{ color: "var(--ink-soft)" }}>from</div>
-                    <div className="text-2xl font-bold">£{s.price}</div>
-                  </div>
-                  <a className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Book →</a>
+          <h2 className="max-w-2xl text-[36px] font-bold leading-tight tracking-tight">
+            The calmest way to stay compliant.
+          </h2>
+          <p className="mt-4 max-w-xl text-[15px]" style={{ color: "var(--ink-soft)" }}>
+            Three steps. No phone tag, no paper trail, no surprise fees.
+          </p>
+          <div className="mt-12 grid gap-10 md:grid-cols-3">
+            {[
+              {
+                n: "01",
+                t: "Choose & quote",
+                d: "Pick the certificates you need above for a live price — or call us and we'll find the earliest slot at your property.",
+                icon: ClipboardCheck,
+              },
+              {
+                n: "02",
+                t: "Engineer visits",
+                d: "A Gas Safe or NAPIT-registered engineer attends — same-day and next-day slots across every London borough.",
+                icon: CalendarClock,
+              },
+              {
+                n: "03",
+                t: "Certificate delivered",
+                d: "Your signed PDF arrives by email the same day, stored securely in your landlord portal — share it with tenants or agents in one click.",
+                icon: Mail,
+              },
+            ].map(({ n, t, d, icon: Icon }) => (
+              <div key={n}>
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
+                  <Icon className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
                 </div>
+                <div className="mt-5 text-sm font-semibold" style={{ color: "var(--emerald-deep)" }}>{n}</div>
+                <div className="mt-1 text-lg font-semibold">{t}</div>
+                <div className="mt-2 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{d}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PROOF */}
+      {/* SERVICES */}
+      <section id="services" className="mx-auto max-w-6xl px-6 py-24">
+        <div className="flex items-end justify-between">
+          <h2 className="text-[36px] font-bold tracking-tight max-w-xl">Every certificate a London landlord needs.</h2>
+          <a className="hidden md:inline text-sm font-semibold" style={{ color: "var(--navy)" }}>Compare all →</a>
+        </div>
+        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border md:grid-cols-2 lg:grid-cols-3" style={{ borderColor: "var(--line)", background: "var(--line)" }}>
+          {SERVICES.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.code} className="bg-white p-7 flex flex-col">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: "color-mix(in oklab, var(--emerald) 12%, white)" }}>
+                    <Icon className="h-5 w-5" style={{ color: "var(--emerald-deep)" }} />
+                  </div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>{s.code}</div>
+                </div>
+                <div className="mt-4 text-lg font-semibold">{s.name}</div>
+                <div className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>{s.turn} turnaround · {s.valid}</div>
+                <p className="mt-3 text-[14px] leading-relaxed flex-1" style={{ color: "var(--ink-soft)" }}>{s.context}</p>
+                <div className="mt-6 flex items-end justify-between border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                  <div>
+                    <div className="text-xs" style={{ color: "var(--ink-soft)" }}>from</div>
+                    <div className="text-2xl font-bold">£{s.price}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <a className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Book →</a>
+                    <a className="text-xs" style={{ color: "var(--ink-soft)" }}>Learn more</a>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* PRE-INSPECTION CHECKLIST */}
+      <section className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[1fr_1.2fr] items-start">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
+            <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
+            <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
+              A little prep means our engineer is in and out faster — and your certificate lands in your inbox the same day.
+            </p>
+            <a href="#" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--navy)" }}>
+              Download the full checklist (PDF) <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {CHECKLIST.map((c) => (
+              <li key={c} className="flex items-start gap-3 rounded-xl border p-4" style={{ borderColor: "var(--line)" }}>
+                <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: "var(--emerald-deep)" }} />
+                <span className="text-[14px] leading-relaxed">{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* PROOF / TRUSTPILOT */}
       <section className="mx-auto max-w-6xl px-6 py-24">
-        <div className="grid gap-10 md:grid-cols-3">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider" style={{ background: "color-mix(in oklab, var(--navy) 8%, white)", color: "var(--navy)" }}>
+              What landlords say
+            </div>
+            <h2 className="mt-4 text-[40px] font-bold tracking-tight leading-[1.05]" style={{ color: "var(--navy-deep)" }}>
+              Trusted by 3,528<br />London landlords.
+            </h2>
+          </div>
+          <div className="rounded-xl border bg-white px-6 py-4 text-center" style={{ borderColor: "var(--line)" }}>
+            <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Rated on Trustpilot</div>
+            <div className="mt-1 flex items-center justify-center gap-2">
+              <span style={{ color: "var(--emerald-deep)" }}>★★★★★</span>
+              <span className="text-2xl font-bold">4.9</span>
+            </div>
+            <div className="text-xs" style={{ color: "var(--ink-soft)" }}>3,528 reviews</div>
+          </div>
+        </div>
+
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
           {[
-            ["Booked the CP12 and EICR together at 9pm, engineer arrived 10am the next day. Certificates by lunch.", "Priya · Battersea"],
-            ["We manage 80 units. Their portal saves us a full day a week of chasing.", "James · Foxtons Wandsworth"],
-            ["Honest pricing, no surprise add-ons. The only certificate company I now use.", "Mehmet · Hackney"],
-          ].map(([q, a]) => (
-            <figure key={a as string} className="rounded-2xl border p-6" style={{ borderColor: "var(--line)" }}>
+            { q: "Been using Landlord Certificates for our Gas Safeties and boiler services for years. Both the admin team and their engineers are professional and efficient — a company you can genuinely trust.", a: "Portfolio Landlord" },
+            { q: "Great service — excellent communication and timely arrival. Efficient boiler service and comprehensive review of gas safety requirements. Would highly recommend to any landlord.", a: "London Landlord" },
+            { q: "I have used Landlord Certificates repeatedly over the years and find them to be highly efficient and reliable. Will continue using them for the foreseeable future without hesitation.", a: "Buy-to-Let Landlord" },
+          ].map(({ q, a }) => (
+            <figure key={a} className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--line)" }}>
               <div className="text-sm" style={{ color: "var(--emerald-deep)" }}>★★★★★</div>
               <blockquote className="mt-3 text-[15px] leading-relaxed">"{q}"</blockquote>
-              <figcaption className="mt-4 text-xs" style={{ color: "var(--ink-soft)" }}>{a}</figcaption>
+              <figcaption className="mt-5 border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                <div className="text-sm font-semibold">{a}</div>
+                <div className="text-xs" style={{ color: "var(--ink-soft)" }}>Verified Trustpilot Review</div>
+              </figcaption>
             </figure>
           ))}
         </div>
       </section>
 
+      {/* FAQ */}
+      <section id="faq" className="border-t" style={{ borderColor: "var(--line)", background: "white" }}>
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 lg:grid-cols-[1fr_1.5fr]">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>FAQ</div>
+            <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">Answers before you book.</h2>
+            <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
+              Still unsure? Call us on{" "}
+              <a href="tel:02034881555" className="font-semibold" style={{ color: "var(--navy)" }}>020 3488 1555</a>{" "}
+              — a real person, weekdays 8am–7pm.
+            </p>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--line)" }}>
+            {FAQS.map((f, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={f.q} className="border-b" style={{ borderColor: "var(--line)" }}>
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="flex w-full items-center justify-between py-5 text-left"
+                  >
+                    <span className="text-[16px] font-semibold pr-4">{f.q}</span>
+                    <ChevronDown
+                      className="h-5 w-5 flex-shrink-0 transition-transform"
+                      style={{ color: "var(--ink-soft)", transform: open ? "rotate(180deg)" : "none" }}
+                    />
+                  </button>
+                  {open && (
+                    <p className="pb-5 text-[15px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{f.a}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
-      <footer className="border-t" style={{ borderColor: "var(--line)", background: "var(--navy-deep)", color: "white" }}>
+      <footer style={{ background: "var(--navy-deep)", color: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">
             <div>
@@ -230,6 +536,9 @@ function DirectionA() {
                 <span className="font-semibold">Landlord Certificates</span>
               </div>
               <p className="mt-4 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>London's certificate experts since 2010. Gas Safe 552272.</p>
+              <a href="/portal" className="mt-5 inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium" style={{ borderColor: "rgba(255,255,255,0.2)", color: "white" }}>
+                <LogIn className="h-3.5 w-3.5" /> Landlord portal
+              </a>
             </div>
             <FooterCol title="Certificates" items={["Gas Safety", "EICR", "EPC", "PAT", "Legionella", "Fire Risk"]} />
             <FooterCol title="Coverage" items={["Wandsworth", "Hackney", "Camden", "Lambeth", "All boroughs"]} />
