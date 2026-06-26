@@ -800,8 +800,7 @@ function DirectionA() {
                     <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Same-day engineer slots available across all London boroughs</span>
                   </div>
                 </div>
-              );
-            })}
+            ))}
           </div>
 
           {/* Trust microcopy */}
