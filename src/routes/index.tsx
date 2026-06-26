@@ -508,8 +508,12 @@ function DirectionA() {
       className="min-h-screen"
     >
       {/* 1. OFFER BAR */}
-      <div className="text-white text-center text-xs py-2 px-4" style={{ background: "var(--navy-deep)" }}>
-        <span className="inline-flex items-center gap-2 flex-wrap justify-center">
+      <div className="text-white text-center text-sm py-3 px-4" style={{ background: "var(--navy-deep)" }}>
+        <span className="inline-flex items-center gap-2.5 flex-wrap justify-center">
+          <span className="relative flex h-2 w-2 flex-shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "var(--emerald)" }} />
+            <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--emerald)" }} />
+          </span>
           <Tag className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "var(--emerald)" }} />
           <strong>June deals:</strong> Gas Safety + Boiler Service £85 (save 60%) · EICR + PAT from £99 (save £46) · Ends 30 June
         </span>
@@ -1185,6 +1189,8 @@ function DirectionA() {
         </div>
       </footer>
 
+      <FixedDealPill />
+
       {/* AI CHAT WIDGET */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {chatOpen && (
@@ -1298,6 +1304,49 @@ function DirectionA() {
           {chatOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
         </button>
       </div>
+    </div>
+  );
+}
+
+function FixedDealPill() {
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => { if (window.scrollY > 280) setVisible(true); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!visible || dismissed) return null;
+
+  return (
+    <div
+      className="fixed z-50 flex items-center gap-3 rounded-full px-4 py-3 shadow-[0_8px_32px_-8px_rgba(15,30,60,0.45)]"
+      style={{ bottom: "24px", left: "24px", background: "var(--navy-deep)", color: "white", maxWidth: "calc(100vw - 48px)" }}
+    >
+      <span className="relative flex h-2 w-2 flex-shrink-0">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "var(--emerald)" }} />
+        <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--emerald)" }} />
+      </span>
+      <span className="text-[13px] font-medium whitespace-nowrap">
+        <span style={{ color: "var(--emerald)" }}>June deal:</span> Gas + Boiler £85 · Ends 30 Jun
+      </span>
+      <a
+        href="#offers"
+        onClick={() => setDismissed(true)}
+        className="rounded-full px-3 py-1 text-[12px] font-bold flex-shrink-0"
+        style={{ background: "var(--emerald)", color: "rgba(0,0,0,0.8)" }}
+      >
+        See deal
+      </a>
+      <button
+        onClick={() => setDismissed(true)}
+        className="flex-shrink-0 text-[18px] leading-none opacity-50 hover:opacity-100 ml-1"
+        aria-label="Dismiss"
+      >
+        ×
+      </button>
     </div>
   );
 }
