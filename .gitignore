@@ -31,3 +31,8 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Local config with MCP tokens / secrets
+.claude.json
+.env
+.env.*
