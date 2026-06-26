@@ -332,7 +332,7 @@ type ChatMessage = {
 };
 
 function DirectionA() {
-  const [offerSlide, setOfferSlide] = useState(0);
+  
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [expandedService, setExpandedService] = useState<string | null>(null);
   const [activeChecklistTab, setActiveChecklistTab] = useState<keyof typeof CHECKLISTS>("CP12");
