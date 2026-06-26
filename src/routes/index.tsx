@@ -700,119 +700,134 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 8. JUNE DEALS CAROUSEL */}
-      <section id="offers" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>This month</div>
-            <h2 className="mt-2 text-[32px] font-bold tracking-tight">June deals. Real prices. No code needed.</h2>
+      {/* 8. DEALS — Bold Bundle Section */}
+      <section id="offers" className="relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #0f2047 0%, #1a3a6b 40%, #134e2d 100%)" }} />
+        {/* Floating glow blobs */}
+        <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #d4a017 0%, transparent 70%)", filter: "blur(60px)" }} />
+        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #4ade80 0%, transparent 70%)", filter: "blur(50px)" }} />
+
+        <div className="relative mx-auto max-w-6xl px-6 py-20">
+          {/* Header */}
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider" style={{ background: "rgba(212,160,23,0.15)", color: "#fbbf24", border: "1px solid rgba(212,160,23,0.3)" }}>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#fbbf24" }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "#fbbf24" }} />
+              </span>
+              Limited time bundles
+            </div>
+            <h2 className="mt-5 text-[36px] md:text-[44px] font-bold text-white tracking-tight leading-tight">Bundle & Save</h2>
+            <p className="mt-3 text-[15px] max-w-lg mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
+              Book two certificates together and save. No code needed. Prices are fixed and include VAT.
+            </p>
           </div>
-          <a href="#quote" className="text-sm font-semibold inline-flex items-center gap-1" style={{ color: "var(--navy)" }}>
-            Build your own bundle <ArrowRight className="h-3.5 w-3.5" />
-          </a>
-        </div>
 
-        <div className="relative">
-          {JUNE_DEALS.map((d, i) => (
-            <div
-              key={d.name}
-              className="relative rounded-2xl overflow-hidden items-center"
-              style={{
-                background: d.bg,
-                minHeight: 260,
-                display: offerSlide === i ? "flex" : "none",
-              }}
-            >
-              {/* Left: copy */}
-              <div className="relative z-10 px-10 py-10 max-w-md">
-                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  {d.label}
-                </div>
-                <h3 className="mt-2 text-2xl font-bold text-white leading-tight">{d.name}</h3>
-                {"sub" in d && d.sub && (
-                  <div className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>{d.sub}</div>
-                )}
-                <div className="mt-4 text-[56px] font-extrabold text-white tracking-tight leading-none">£{d.price}</div>
-                <div className="mt-2 text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>{d.saving}</div>
-                <a
-                  href="tel:02037725959"
-                  className="mt-6 inline-block rounded-lg bg-white px-6 py-2.5 text-sm font-semibold"
-                  style={{ color: d.bg }}
+          {/* Deal cards */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {JUNE_DEALS.map((d, i) => {
+              const separateTotal = d.cards.reduce((acc, c) => {
+                if (c.title === "Gas Safety") return acc + 40;
+                if (c.title === "Boiler Service") return acc + 85;
+                if (c.title === "EICR") return acc + 70;
+                if (c.title === "PAT Testing") return acc + 55;
+                return acc;
+              }, 0);
+              return (
+                <div
+                  key={d.name}
+                  className="relative group rounded-2xl overflow-hidden"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(8px)" }}
                 >
-                  Book now →
-                </a>
-              </div>
+                  {/* Ribbon */}
+                  <div className="absolute top-0 right-0 z-10">
+                    <div className="relative overflow-hidden rounded-bl-2xl px-5 py-2 text-xs font-bold uppercase tracking-wider text-white" style={{ background: "linear-gradient(135deg, #d4a017, #b8860b)" }}>
+                      Save {i === 0 ? "~\u00a340" : "\u00a346"}
+                    </div>
+                  </div>
 
-              {/* Right: floating certificate cards */}
-              <div className="absolute right-0 top-0 h-full w-[50%] pointer-events-none hidden md:block">
-                {/* glow behind cards */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div style={{
-                    width: 220, height: 220,
-                    borderRadius: "50%",
-                    background: d.glow,
-                    filter: "blur(48px)",
-                  }} />
-                </div>
-                {/* cards */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {d.cards.map((c, ci) => (
-                    <div
-                      key={ci}
-                      style={{
-                        position: "absolute",
-                        transform: `rotate(${c.rotate}deg) translate(${c.tx}px, ${c.ty}px)`,
-                        width: 148,
-                        borderRadius: 14,
-                        background: c.color,
-                        padding: "18px 16px",
-                        boxShadow: "0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginBottom: 6 }}>Certificate</div>
-                      <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{c.title}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>{c.sub}</div>
-                      <div style={{ marginTop: 18, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", gap: 6 }}>
-                        <CheckCircle2 size={13} style={{ color: "rgba(255,255,255,0.7)" }} />
-                        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)" }}>Issued same day</span>
+                  <div className="p-8 md:p-10">
+                    {/* Label */}
+                    <div className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      {d.label}
+                    </div>
+
+                    {/* Bundle visual: two overlapping mini cards */}
+                    <div className="relative h-32 mb-6">
+                      {d.cards.map((c, ci) => (
+                        <div
+                          key={ci}
+                          className="absolute top-0 flex items-center gap-3 rounded-xl px-5 py-4 shadow-lg transition-transform duration-300 group-hover:scale-[1.02]"
+                          style={{
+                            left: ci === 0 ? 0 : 60,
+                            top: ci === 0 ? 0 : 28,
+                            width: 220,
+                            background: ci === 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.92)",
+                            boxShadow: ci === 0 ? "0 8px 30px rgba(0,0,0,0.25)" : "0 4px 20px rgba(0,0,0,0.15)",
+                            zIndex: ci === 0 ? 2 : 1,
+                            transform: `rotate(${ci === 0 ? -2 : 1}deg)`,
+                          }}
+                        >
+                          <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "color-mix(in oklab, " + c.color + " 12%, white)" }}>
+                            <CheckCircle2 className="h-5 w-5" style={{ color: c.color }} />
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold" style={{ color: "#0f172a" }}>{c.title}</div>
+                            <div className="text-[11px]" style={{ color: "#64748b" }}>{c.sub}</div>
+                          </div>
+                        </div>
+                      ))}
+                      {/* "+" connector */}
+                      <div className="absolute left-[108px] top-[56px] z-20 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: "#d4a017", boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+                        +
                       </div>
                     </div>
-                  ))}
+
+                    {/* Pricing */}
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="text-[52px] font-extrabold text-white tracking-tight leading-none">&pound;{d.price}</span>
+                      <span className="text-[15px] font-medium" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "line-through" }}>
+                        &pound;{separateTotal} separately
+                      </span>
+                    </div>
+                    {"sub" in d && d.sub && (
+                      <div className="text-[13px] mb-1" style={{ color: "rgba(255,255,255,0.55)" }}>{d.sub}</div>
+                    )}
+                    <div className="text-[13px] font-medium" style={{ color: "#4ade80" }}>{d.saving}</div>
+
+                    {/* CTA */}
+                    <a
+                      href="tel:02037725959"
+                      className="mt-6 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
+                      style={{ background: "linear-gradient(135deg, #d4a017, #b8860b)", boxShadow: "0 4px 20px rgba(212,160,23,0.35)" }}
+                    >
+                      Book this bundle <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </div>
+
+                  {/* Bottom progress bar / urgency strip */}
+                  <div className="flex items-center gap-3 px-8 md:px-10 py-3" style={{ background: "rgba(0,0,0,0.2)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <CalendarClock className="h-4 w-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }} />
+                    <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Same-day engineer slots available across all London boroughs</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
 
-          {/* Prev / Next arrows */}
-          <button
-            onClick={() => setOfferSlide((s) => (s - 1 + JUNE_DEALS.length) % JUNE_DEALS.length)}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-            style={{ background: "rgba(255,255,255,0.2)" }}
-          >
-            <ChevronLeft className="h-5 w-5 text-white" />
-          </button>
-          <button
-            onClick={() => setOfferSlide((s) => (s + 1) % JUNE_DEALS.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-            style={{ background: "rgba(255,255,255,0.2)" }}
-          >
-            <ChevronRight className="h-5 w-5 text-white" />
-          </button>
-        </div>
-
-        {/* Dot indicators */}
-        <div className="mt-4 flex justify-center gap-2">
-          {JUNE_DEALS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setOfferSlide(i)}
-              className="h-2 rounded-full transition-all"
-              style={{
-                width: offerSlide === i ? 24 : 8,
-                background: offerSlide === i ? "var(--navy)" : "var(--line)",
-              }}
-            />
-          ))}
+          {/* Trust microcopy */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[12px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Fixed prices, no hidden fees
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Certificate issued same day
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Gas Safe / NAPIT registered engineers
+            </span>
+          </div>
         </div>
       </section>
 
