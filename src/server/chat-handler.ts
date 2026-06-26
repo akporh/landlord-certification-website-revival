@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
 
   let body: { message: string; history?: Array<{ role: string; content: string }> };
   try {
-    body = await readBody(event);
+    body = (await readBody(event)) ?? { message: "" };
   } catch {
     return { content: "Invalid request.", canvas: null, handoff: false };
   }
