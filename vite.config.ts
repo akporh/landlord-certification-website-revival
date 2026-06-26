@@ -14,5 +14,8 @@ export default defineConfig({
   },
   nitro: {
     preset: "vercel",
+    handlers: [
+      { route: "/api/chat", method: "post", handler: "./src/server/chat-handler.ts" },
+    ],
   },
 });

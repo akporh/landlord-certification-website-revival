@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
+import { LondonBoroughMap } from "@/components/LondonBoroughMap";
 import stromaLogo from "@/assets/stroma.jpg";
 import trustmarkLogo from "@/assets/trustmark.jpg";
 import trustpilotLogo from "@/assets/trustpilot.svg";
@@ -345,14 +346,27 @@ function DirectionA() {
   const [postcodeResult, setPostcodeResult] = useState<{ status: string; message: string } | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatEverOpened, setChatEverOpened] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
+  const [pulseActive, setPulseActive] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "ai", content: "Hi! I'm the LC assistant. I can help with pricing, coverage, or booking. What do you need?" },
+    { role: "ai", content: "Hi — I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [handoffActive, setHandoffActive] = useState(false);
-  const [renewalContext, setRenewalContext] = useState<{ cert: string | null; awaitingDate: boolean }>({ cert: null, awaitingDate: false });
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPulseActive(false), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
+  function openChat() {
+    setChatOpen(true);
+    setChatEverOpened(true);
+    setShowTooltip(false);
+  }
 
   const toggle = (code: string) =>
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
@@ -363,128 +377,22 @@ function DirectionA() {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, chatOpen]);
 
-  function getMockResponse(userMsg: string): { content: string; canvas?: { type: string; data: Record<string, unknown> }; handoff?: boolean } {
-    const lower = userMsg.toLowerCase();
-
-    // Human handoff
-    if (["speak to someone", "real person", "human", "agent", "call me", "speak to a person"].some((t) => lower.includes(t))) {
-      return { content: "Connecting you now...", handoff: true };
-    }
-
-    // Renewal flow — awaiting date
-    if (renewalContext.awaitingDate) {
-      const months = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-      const matchedMonth = months.find((m) => lower.includes(m));
-      const yearMatch = lower.match(/20\d{2}/);
-      if (matchedMonth || yearMatch) {
-        const certType = renewalContext.cert ?? "Gas Safety";
-        const validity: Record<string, { years: number; label: string }> = {
-          "Gas Safety": { years: 1, label: "1 year" },
-          "EICR": { years: 5, label: "5 years" },
-          "EPC": { years: 10, label: "10 years" },
-          "PAT": { years: 1, label: "1 year (recommended)" },
-        };
-        const v = validity[certType] ?? validity["Gas Safety"];
-        const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-        const monthIdx = matchedMonth ? months.indexOf(matchedMonth) : new Date().getMonth();
-        const year = yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
-        const renewalYear = year + v.years;
-        const renewalMonth = monthNames[monthIdx];
-        setRenewalContext({ cert: null, awaitingDate: false });
-        return {
-          content: `Your ${certType} certificate is due for renewal in **${renewalMonth} ${renewalYear}** (valid for ${v.label}). Want me to arrange a visit before it expires?`,
-          canvas: {
-            type: "renewal-timeline",
-            data: {
-              cert: certType,
-              lastDone: `${monthNames[monthIdx]} ${year}`,
-              dueDate: `${renewalMonth} ${renewalYear}`,
-              validity: v.label,
-            },
-          },
-        };
-      }
-    }
-
-    // Certificate renewal / due date question
-    const certKeywords: Array<[string[], string]> = [
-      [["gas", "cp12", "boiler"], "Gas Safety"],
-      [["eicr", "electric", "electrical"], "EICR"],
-      [["epc", "energy"], "EPC"],
-      [["pat"], "PAT"],
-    ];
-    const isDueQuestion = ["due", "expire", "renewal", "when", "renew", "remind"].some((t) => lower.includes(t));
-    if (isDueQuestion) {
-      for (const [keywords, certName] of certKeywords) {
-        if (keywords.some((k) => lower.includes(k))) {
-          setRenewalContext({ cert: certName, awaitingDate: true });
-          return { content: `Sure — when was your last ${certName} inspection? (e.g. "June 2024")` };
-        }
-      }
-      setRenewalContext({ cert: "Gas Safety", awaitingDate: true });
-      return { content: "Happy to help. Which certificate — Gas Safety, EICR, EPC or PAT? And when was your last inspection?" };
-    }
-
-    // Pricing / quote
-    if (["price", "cost", "how much", "quote", "cheap", "fee", "charge"].some((t) => lower.includes(t))) {
-      const services = [
-        { name: "Gas Safety (CP12)", price: "from £40" },
-        { name: "EICR", price: "from £70" },
-        { name: "EPC", price: "from £65" },
-        { name: "PAT Testing", price: "from £55" },
-      ];
-      const juneDeal = lower.includes("gas") || lower.includes("bundle")
-        ? [{ name: "☀️ June deal: Gas + Boiler Service", price: "£85 (save 60%)" }, { name: "June deal: EICR + PAT", price: "£99 (save £46)" }]
-        : [];
-      return {
-        content: "Here's our current pricing. All prices are fixed — no hidden fees.",
-        canvas: { type: "price-calculator", data: { services: [...services, ...juneDeal] } },
-      };
-    }
-
-    // Coverage / postcode
-    if (["cover", "area", "borough", "postcode", "london", "zone"].some((t) => lower.includes(t))) {
-      const postcodeMatch = lower.match(/[a-z]{1,2}\d{1,2}/i);
-      const covered = postcodeMatch ? /^(e|ec|n|nw|se|sw|w|wc)/i.test(postcodeMatch[0]) : true;
-      return {
-        content: covered
-          ? "Yes, we cover that area — same-day and next-day slots available."
-          : "That's an M25 fringe area. Call us on 0203 772 5959 to confirm availability.",
-        canvas: { type: "coverage-result", data: { covered } },
-      };
-    }
-
-    // Booking
-    if (["book", "appoint", "slot", "visit", "schedule", "available"].some((t) => lower.includes(t))) {
-      return { content: "We have same-day and next-day slots across all London boroughs. Quickest to call: 0203 772 5959 Mon–Fri 9am–5pm. Or use the 'Get quote' button above to select your certificates." };
-    }
-
-    // HMO / commercial
-    if (["hmo", "commercial", "house in multiple", "fire alarm", "emergency light", "letting agent"].some((t) => lower.includes(t))) {
-      return {
-        content: "For HMOs and commercial properties we offer Emergency Lighting Certificates (£90), Fire Alarm Testing (£90) and Commercial EICR (from £150). All require annual or bi-annual inspection. Call 0203 772 5959 for a tailored quote.",
-      };
-    }
-
-    // Certificate validity / what's covered
-    if (["valid", "last", "how long", "covered", "include", "what do you"].some((t) => lower.includes(t))) {
-      return { content: "Gas Safety (CP12) is valid for 1 year. EICR is valid for 5 years. EPC is valid for 10 years. PAT Testing is recommended annually. Our engineers are Gas Safe (552272), NAPIT and Stroma certified." };
-    }
-
-    // Fallback
-    return { content: "I can help with pricing, coverage, certificate renewals or booking. What do you need?" };
-  }
-
-  function sendMessage() {
-    if (!chatInput.trim() || chatLoading) return;
-    const userMsg = chatInput.trim();
-    setChatInput("");
+  async function sendMessage(override?: string) {
+    const userMsg = (override ?? chatInput).trim();
+    if (!userMsg || chatLoading) return;
+    if (!override) setChatInput("");
+    const history = messages.filter((m) => m.role === "user" || m.role === "ai");
     setMessages((m) => [...m, { role: "user", content: userMsg }]);
     setChatLoading(true);
 
-    setTimeout(() => {
-      const response = getMockResponse(userMsg);
-      if (response.handoff) {
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg, history }),
+      });
+      const data = await res.json() as { content: string; canvas: { type: string; data: Record<string, unknown> } | null; handoff: boolean };
+      if (data.handoff) {
         setMessages((m) => [...m, { role: "ai", content: "Connecting you now..." }]);
         setTimeout(() => {
           setHandoffActive(true);
@@ -492,10 +400,13 @@ function DirectionA() {
           setChatLoading(false);
         }, 1500);
       } else {
-        setMessages((m) => [...m, { role: "ai" as const, content: response.content, canvas: response.canvas }]);
+        setMessages((m) => [...m, { role: "ai" as const, content: data.content, canvas: data.canvas ?? undefined }]);
         setChatLoading(false);
       }
-    }, 600);
+    } catch {
+      setMessages((m) => [...m, { role: "ai", content: "I'm having trouble connecting. Call us on 0203 772 5959." }]);
+      setChatLoading(false);
+    }
   }
 
   function checkPostcode() {
@@ -906,51 +817,116 @@ function DirectionA() {
       </section>
 
       {/* 9. COVERAGE MAP */}
-      <section id="coverage" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
+      <section id="coverage" className="border-y" style={{ borderColor: "rgba(255,255,255,0.08)", background: "var(--navy-deep)" }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-start">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>Coverage</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">All 32 London boroughs.</h2>
-              <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald)" }}>Coverage</div>
+              <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight" style={{ color: "white" }}>All 32 London boroughs.</h2>
+              <p className="mt-4 text-[15px]" style={{ color: "rgba(255,255,255,0.60)" }}>
                 Same-day and next-day slots across Greater London. M25 fringe areas covered — call to confirm.
               </p>
 
               <div className="mt-8">
-                <div className="text-[13px] font-medium mb-2">Check your postcode</div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-4 w-4" style={{ color: "var(--navy)" }} />
+                  <div className="text-[13px] font-semibold" style={{ color: "var(--navy)" }}>Check your postcode for instant availability</div>
+                </div>
+                <div
+                  className="flex items-center gap-1.5 rounded-xl border p-1.5 transition-shadow focus-within:shadow-[var(--shadow-xl)]"
+                  style={{ borderColor: "var(--line)", background: "white" }}
+                >
                   <input
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === "Enter" && checkPostcode()}
                     placeholder="e.g. E14 5AB"
-                    className="flex-1 rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-[var(--navy)]"
-                    style={{ borderColor: "var(--line)" }}
+                    aria-label="Property postcode"
+                    className="flex-1 bg-transparent px-3 py-2 text-sm tracking-wide outline-none placeholder:text-[var(--ink-soft)]"
                   />
                   <button
                     onClick={checkPostcode}
-                    className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5"
+                    className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 transition-transform active:scale-[0.98]"
                     style={{ background: "var(--navy)" }}
                   >
                     <Search className="h-4 w-4" /> Check
                   </button>
                 </div>
-                {postcodeResult && postcodeResult.message && (
-                  <div
-                    className="mt-3 rounded-lg px-4 py-3 text-sm flex items-start gap-2"
-                    style={{
-                      background: postcodeResult.status === "covered"
-                        ? "color-mix(in oklab, var(--emerald) 8%, white)"
-                        : postcodeResult.status === "fringe"
-                        ? "oklch(0.98 0.04 90)"
-                        : "oklch(0.98 0.02 25)",
-                      border: `1px solid ${postcodeResult.status === "covered" ? "color-mix(in oklab, var(--emerald) 20%, white)" : "var(--line)"}`,
-                    }}
-                  >
-                    <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: postcodeResult.status === "covered" ? "var(--emerald-deep)" : "var(--ink-soft)" }} />
-                    {postcodeResult.message}
-                  </div>
-                )}
+                <div className="mt-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                  Greater London + M25 fringe — over 30 boroughs served.
+                </div>
+
+                {postcodeResult && postcodeResult.status && postcode.trim() && (() => {
+                  const covered = postcodeResult.status === "covered";
+                  const accent = covered ? "var(--emerald-deep)" : "oklch(0.62 0.16 65)";
+                  return (
+                    <div
+                      className="mt-4 overflow-hidden rounded-2xl border"
+                      style={{
+                        borderColor: covered
+                          ? "color-mix(in oklab, var(--emerald) 28%, white)"
+                          : "oklch(0.88 0.06 75)",
+                        background: covered
+                          ? "color-mix(in oklab, var(--emerald) 7%, white)"
+                          : "oklch(0.985 0.03 80)",
+                      }}
+                    >
+                      <div className="flex items-start gap-3 px-5 py-4">
+                        <div
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white"
+                          style={{ background: accent }}
+                        >
+                          {covered ? <CheckCircle2 className="h-5 w-5" /> : <Phone className="h-[18px] w-[18px]" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[15px] font-bold leading-tight" style={{ color: covered ? "var(--emerald-deep)" : "var(--ink)" }}>
+                            {covered
+                              ? `Great news — we cover ${postcode.trim()}`
+                              : postcodeResult.status === "fringe"
+                              ? `${postcode.trim()} is on our M25 fringe`
+                              : `${postcode.trim()} is outside our usual area`}
+                          </div>
+                          <div className="mt-1 text-[13px]" style={{ color: "var(--ink-soft)" }}>
+                            {covered
+                              ? "Same-day slots available in your area. Book now."
+                              : "Call us to confirm availability."}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className="flex flex-wrap items-center gap-2 border-t px-5 py-3"
+                        style={{ borderColor: covered ? "color-mix(in oklab, var(--emerald) 18%, white)" : "oklch(0.9 0.05 75)" }}
+                      >
+                        {covered ? (
+                          <>
+                            <a
+                              href="#quote"
+                              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition-transform active:scale-[0.98]"
+                              style={{ background: "var(--emerald-deep)" }}
+                            >
+                              Book your slot <ArrowRight className="h-4 w-4" />
+                            </a>
+                            <a
+                              href="tel:02037725959"
+                              className="inline-flex items-center gap-1.5 px-2 py-2 text-[13px] font-semibold"
+                              style={{ color: "var(--navy)" }}
+                            >
+                              <Phone className="h-3.5 w-3.5" /> 0203 772 5959
+                            </a>
+                          </>
+                        ) : (
+                          <a
+                            href="tel:02037725959"
+                            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition-transform active:scale-[0.98]"
+                            style={{ background: "var(--navy)" }}
+                          >
+                            <Phone className="h-4 w-4" /> Call 0203 772 5959
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-8">
@@ -1260,6 +1236,27 @@ function DirectionA() {
                   )}
                 </div>
               ))}
+              {/* Quick action buttons — only before user has typed anything */}
+              {!handoffActive && messages.length === 1 && !chatLoading && (
+                <div className="flex flex-col gap-2 mt-1">
+                  {[
+                    { emoji: "💷", label: "Get a quote", message: "How much for a Gas Safety certificate?" },
+                    { emoji: "📍", label: "Check coverage", message: "Do you cover my area?" },
+                    { emoji: "🗂", label: "My certificates", message: "When is my certificate due for renewal?" },
+                    { emoji: "📞", label: "Talk to someone", message: "I want to speak to someone please" },
+                  ].map(({ emoji, label, message }) => (
+                    <button
+                      key={label}
+                      onClick={() => sendMessage(message)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors hover:opacity-90"
+                      style={{ background: "white", border: "1px solid var(--line)", color: "var(--navy)" }}
+                    >
+                      <span>{emoji}</span>
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {chatLoading && (
                 <div className="flex justify-start">
                   <div className="rounded-2xl px-4 py-3 text-[14px]" style={{ background: "white", border: "1px solid var(--line)", borderRadius: "12px 12px 12px 2px" }}>
@@ -1296,13 +1293,29 @@ function DirectionA() {
           </div>
         )}
 
-        <button
-          onClick={() => setChatOpen((o) => !o)}
-          className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg"
-          style={{ background: "var(--navy)", boxShadow: "var(--shadow-lg)" }}
-        >
-          {chatOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-        </button>
+        {/* "Ask us anything" tooltip — first hover, before first open */}
+        {!chatOpen && !chatEverOpened && showTooltip && (
+          <div
+            className="mb-2 rounded-lg px-3 py-2 text-[13px] font-medium text-white pointer-events-none"
+            style={{ background: "var(--navy)", boxShadow: "var(--shadow-md)", whiteSpace: "nowrap" }}
+          >
+            Ask us anything
+          </div>
+        )}
+        <div className="relative">
+          {pulseActive && !chatOpen && (
+            <span className="absolute inset-0 rounded-full animate-ping opacity-60" style={{ background: "var(--navy)" }} />
+          )}
+          <button
+            onClick={() => (chatOpen ? setChatOpen(false) : openChat())}
+            onMouseEnter={() => !chatEverOpened && setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+            className="relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg"
+            style={{ background: "var(--navy)", boxShadow: "var(--shadow-lg)" }}
+          >
+            {chatOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1371,17 +1384,45 @@ function ChatCanvas({ canvas }: { canvas: { type: string; data: Record<string, u
   }
   if (canvas.type === "renewal-timeline") {
     const { cert, lastDone, dueDate, validity } = canvas.data as { cert: string; lastDone: string; dueDate: string; validity: string };
+    const issued = new Date(lastDone);
+    const due = new Date(dueDate);
+    const today = new Date();
+    const totalMs = due.getTime() - issued.getTime();
+    const elapsedMs = today.getTime() - issued.getTime();
+    const progressPct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+    const daysLeft = Math.round((due.getTime() - today.getTime()) / 86400000);
+    const overdue = daysLeft < 0;
+    const urgent = !overdue && daysLeft <= 30;
+    const soon = !overdue && !urgent && daysLeft <= 60;
+    const accentColor = overdue ? "#dc2626" : urgent ? "#ea580c" : soon ? "#ca8a04" : "var(--emerald)";
+    const badgeText = overdue ? `${Math.abs(daysLeft)} days overdue` : daysLeft === 0 ? "Due today" : `${daysLeft} days until renewal`;
     return (
-      <div className="mt-3 rounded-xl border p-3" style={{ borderColor: "var(--line)", background: "var(--navy-faint)" }}>
-        <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--navy)" }}>Certificate renewal</div>
-        <div className="text-[13px] space-y-1">
-          <div className="flex justify-between"><span style={{ color: "var(--ink-soft)" }}>Certificate</span><span className="font-semibold">{cert}</span></div>
-          <div className="flex justify-between"><span style={{ color: "var(--ink-soft)" }}>Last done</span><span>{lastDone}</span></div>
-          <div className="flex justify-between"><span style={{ color: "var(--ink-soft)" }}>Valid for</span><span>{validity}</span></div>
-          <div className="flex justify-between border-t mt-2 pt-2" style={{ borderColor: "var(--line)" }}><span style={{ color: "var(--ink-soft)" }}>Due</span><span className="font-bold" style={{ color: "var(--navy)" }}>{dueDate}</span></div>
+      <div className="mt-3 rounded-xl border overflow-hidden" style={{ borderColor: "var(--line)" }}>
+        <div className="px-3 pt-3 pb-1" style={{ background: "var(--navy-faint)" }}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>{cert} renewal</span>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: accentColor }}>{badgeText}</span>
+          </div>
+          {/* Timeline bar */}
+          <div className="relative h-2 rounded-full mb-1" style={{ background: "color-mix(in oklab, var(--navy) 12%, white)" }}>
+            <div className="absolute left-0 top-0 h-2 rounded-full transition-all" style={{ width: `${progressPct}%`, background: accentColor }} />
+            {/* Today marker */}
+            {progressPct > 0 && progressPct < 100 && (
+              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow" style={{ left: `calc(${progressPct}% - 6px)`, background: accentColor }} />
+            )}
+          </div>
+          <div className="flex justify-between text-[10px] mb-3" style={{ color: "var(--ink-soft)" }}>
+            <span>{lastDone}</span>
+            <span className="font-semibold" style={{ color: accentColor }}>{dueDate}</span>
+          </div>
+          <div className="text-[11px] mb-3" style={{ color: "var(--ink-soft)" }}>Valid for {validity} · Gas Safe reg 552272</div>
         </div>
-        <a href="tel:02037725959" className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold" style={{ color: "var(--navy)" }}>
-          <Phone className="h-3 w-3" /> Book renewal: 0203 772 5959
+        <a
+          href="tel:02037725959"
+          className="flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-semibold text-white"
+          style={{ background: accentColor }}
+        >
+          <Phone className="h-3.5 w-3.5" /> Book renewal now — 0203 772 5959
         </a>
       </div>
     );
