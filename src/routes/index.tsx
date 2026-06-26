@@ -15,8 +15,6 @@ import {
   Phone,
   Tag,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   ArrowRight,
   ShieldCheck,
   Star,
