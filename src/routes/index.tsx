@@ -172,28 +172,24 @@ const COMMERCIAL_SERVICES = [
 
 const JUNE_DEALS = [
   {
-    label: "June Deal — Ends 30 June",
+    label: "June Deal \u2014 Ends 30 June",
     name: "Gas Safety + Boiler Service",
     price: 85,
-    saving: "Save ~£40 vs. booking separately",
-    bg: "#1B3A6B",
-    glow: "rgba(212,160,23,0.35)",
+    saving: "Save ~\u00a340 vs. booking separately",
     cards: [
-      { title: "Gas Safety", sub: "CP12 Certificate", color: "#B8860B", rotate: -10, tx: -20, ty: 10 },
-      { title: "Boiler Service", sub: "Annual inspection", color: "#1B579A", rotate: 6, tx: 30, ty: -10 },
+      { title: "Gas Safety", sub: "CP12 Certificate", color: "#B8860B" },
+      { title: "Boiler Service", sub: "Annual inspection", color: "#1B579A" },
     ],
   },
   {
-    label: "June Deal — Ends 30 June",
+    label: "June Deal \u2014 Ends 30 June",
     name: "EICR + PAT Testing",
-    sub: "1–3 bed · up to 20 items",
+    sub: "1\u20133 bed \u00b7 up to 20 items",
     price: 99,
-    saving: "Save £46 vs. booking separately",
-    bg: "#2D6A27",
-    glow: "rgba(27,87,154,0.4)",
+    saving: "Save \u00a346 vs. booking separately",
     cards: [
-      { title: "EICR", sub: "Electrical inspection", color: "#1B579A", rotate: -8, tx: -20, ty: 12 },
-      { title: "PAT Testing", sub: "Up to 20 items", color: "#3D7516", rotate: 7, tx: 28, ty: -8 },
+      { title: "EICR", sub: "Electrical inspection", color: "#1B579A" },
+      { title: "PAT Testing", sub: "Up to 20 items", color: "#3D7516" },
     ],
   },
 ];
