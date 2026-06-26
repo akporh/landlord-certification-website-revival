@@ -722,15 +722,7 @@ function DirectionA() {
 
           {/* Deal cards */}
           <div className="grid md:grid-cols-2 gap-6">
-            {JUNE_DEALS.map((d, i) => {
-              const separateTotal = d.cards.reduce((acc, c) => {
-                if (c.title === "Gas Safety") return acc + 40;
-                if (c.title === "Boiler Service") return acc + 85;
-                if (c.title === "EICR") return acc + 70;
-                if (c.title === "PAT Testing") return acc + 55;
-                return acc;
-              }, 0);
-              return (
+            {JUNE_DEALS.map((d, i) => (
                 <div
                   key={d.name}
                   className="relative group rounded-2xl overflow-hidden"
@@ -781,16 +773,16 @@ function DirectionA() {
                     </div>
 
                     {/* Pricing */}
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <span className="text-[52px] font-extrabold text-white tracking-tight leading-none">&pound;{d.price}</span>
-                      <span className="text-[15px] font-medium" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "line-through" }}>
-                        &pound;{separateTotal} separately
-                      </span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-[52px] font-extrabold text-white tracking-tight leading-none">&pound;{d.price}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: "rgba(212,160,23,0.2)", color: "#fbbf24" }}>Bundle price</span>
+                      </div>
+                      {"sub" in d && d.sub && (
+                        <div className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>{d.sub}</div>
+                      )}
+                      <div className="text-[13px] font-medium" style={{ color: "#4ade80" }}>{d.saving}</div>
                     </div>
-                    {"sub" in d && d.sub && (
-                      <div className="text-[13px] mb-1" style={{ color: "rgba(255,255,255,0.55)" }}>{d.sub}</div>
-                    )}
-                    <div className="text-[13px] font-medium" style={{ color: "#4ade80" }}>{d.saving}</div>
 
                     {/* CTA */}
                     <a
