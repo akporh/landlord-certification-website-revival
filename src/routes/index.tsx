@@ -334,7 +334,7 @@ function DirectionA() {
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [expandedService, setExpandedService] = useState<string | null>(null);
   const [postcode, setPostcode] = useState("");
-  const [postcodeResult, setPostcodeResult] = useState<{ status: string; message: string } | null>(null);
+  
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatEverOpened, setChatEverOpened] = useState(false);
