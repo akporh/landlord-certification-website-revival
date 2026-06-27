@@ -22,11 +22,9 @@ import {
   X,
   Send,
   MapPin,
-  Search,
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
-import { LondonBoroughMap } from "@/components/LondonBoroughMap";
 import stromaLogo from "@/assets/stroma.jpg";
 import trustmarkLogo from "@/assets/trustmark.jpg";
 import trustpilotLogo from "@/assets/trustpilot.svg";
