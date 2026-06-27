@@ -660,13 +660,13 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 7. HMO & COMMERCIAL */}
-      <section id="hmo" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
+      {/* 7. COMMERCIAL & HMO */}
+      <section id="commercial" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>HMO & Commercial</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight">Certificates for HMOs and commercial properties.</h2>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>Commercial & HMO</div>
+              <h2 className="mt-2 text-[32px] font-bold tracking-tight">Certificates for commercial properties and HMOs.</h2>
               <p className="mt-3 text-[15px] max-w-xl" style={{ color: "var(--ink-soft)" }}>
                 Legal requirements for Houses in Multiple Occupation, commercial premises and larger managed properties.
               </p>
