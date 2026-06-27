@@ -232,8 +232,8 @@ const USPS = [
   },
   {
     icon: Zap,
-    heading: "Same-day and next-day slots",
-    body: "Across all 32 London boroughs. SMS confirmation within 15 minutes.",
+    heading: "Fast London availability",
+    body: "Every borough covered. Most bookings confirmed within 15 minutes by SMS.",
   },
   {
     icon: Star,
