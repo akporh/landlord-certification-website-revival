@@ -245,7 +245,7 @@ const USPS = [
 const FAQS = [
   {
     q: "How quickly can an engineer attend?",
-    a: "Most London bookings get a same-day or next-day slot. Choose your preferred window at checkout and we confirm by SMS within 15 minutes.",
+    a: "Most London bookings are confirmed within 15 minutes by SMS. Choose your preferred window at checkout and we'll find the earliest available slot at your property.",
   },
   {
     q: "What happens if my property fails the inspection?",
