@@ -432,9 +432,10 @@ function DirectionA() {
           </div>
           <nav className="hidden gap-7 text-sm md:flex" style={{ color: "var(--ink-soft)" }}>
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
-            <a href="#hmo" className="hover:text-[var(--navy)]">HMO</a>
-            <a href="#offers" className="hover:text-[var(--navy)]">Offers</a>
+            <a href="#commercial" className="hover:text-[var(--navy)]">Commercial</a>
+            <a href="#offers" className="hover:text-[var(--navy)]">Bundles</a>
             <a href="#coverage" className="hover:text-[var(--navy)]">Coverage</a>
+            <Link to="/clients" className="hover:text-[var(--navy)]">For Agents</Link>
             <a href="#faq" className="hover:text-[var(--navy)]">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
