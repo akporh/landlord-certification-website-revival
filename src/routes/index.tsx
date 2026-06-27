@@ -957,8 +957,8 @@ function DirectionA() {
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               { n: "01", t: "Choose & quote", d: "Pick the certificates you need for a live price, or call us and we'll find the earliest slot at your property.", icon: ClipboardCheck },
-              { n: "02", t: "Engineer visits", d: "A Gas Safe or NAPIT-registered engineer attends, with same-day and next-day slots across every London borough.", icon: CalendarClock },
-              { n: "03", t: "Certificate delivered", d: "Your signed PDF arrives by email the same day, stored securely in your landlord portal and shareable in one click.", icon: Mail },
+              { n: "02", t: "Engineer visits", d: "A Gas Safe or NAPIT-registered engineer attends at your chosen time, covering every London borough.", icon: CalendarClock },
+              { n: "03", t: "Certificate delivered", d: "Your signed PDF arrives by email within 24 hours, stored securely in your landlord portal and shareable in one click.", icon: Mail },
             ].map(({ n, t, d, icon: Icon }) => (
               <div key={n}>
                 <div className="flex items-center gap-3">
