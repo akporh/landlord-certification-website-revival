@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Landlord Certificates, booked in 60 seconds" },
       {
         property: "og:description",
-        content: "London's calmest way to stay compliant. Certified engineers, fixed prices, next-day slots.",
+        content: "London's calmest way to stay compliant. Certified engineers, fixed prices, certificate emailed within 24 hours.",
       },
     ],
   }),
