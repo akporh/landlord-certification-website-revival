@@ -975,47 +975,47 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 11. CHECKLISTS (tabbed) */}
+      {/* 11. CHECKLISTS — all visible at once */}
       <section className="border-b" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] items-start">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
-              <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
-                A little prep means our engineer is in and out faster — and your certificate lands in your inbox the same day.
-              </p>
-            </div>
-            <div>
-              {/* Tabs */}
-              <div className="flex rounded-lg border overflow-hidden mb-5" style={{ borderColor: "var(--line)" }}>
-                {(Object.keys(CHECKLISTS) as Array<keyof typeof CHECKLISTS>).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveChecklistTab(key)}
-                    className="flex-1 py-2 text-sm font-semibold transition-colors"
-                    style={{
-                      background: activeChecklistTab === key ? "var(--navy)" : "white",
-                      color: activeChecklistTab === key ? "white" : "var(--ink-soft)",
-                      borderRight: key !== "PAT" ? "1px solid var(--line)" : "none",
-                    }}
-                  >
-                    {key}
-                  </button>
-                ))}
-              </div>
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {CHECKLISTS[activeChecklistTab].map((item) => (
-                  <li key={item} className="flex items-start gap-3 rounded-xl border p-4" style={{ borderColor: "var(--line)" }}>
-                    <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: "var(--emerald-deep)" }} />
-                    <span className="text-[14px] leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="max-w-2xl">
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
+            <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
+            <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
+              A little prep means our engineer is in and out faster, and your certificate lands in your inbox sooner.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {(Object.keys(CHECKLISTS) as Array<keyof typeof CHECKLISTS>).map((key) => {
+              const labels: Record<string, string> = {
+                CP12: "Gas Safety (CP12)",
+                EICR: "Electrical (EICR)",
+                EPC: "Energy (EPC)",
+                PAT: "Portable Appliances (PAT)",
+              };
+              return (
+                <div key={key} className="rounded-2xl border p-7" style={{ borderColor: "var(--line)", background: "var(--cream)" }}>
+                  <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--line)" }}>
+                    <div className="text-[15px] font-bold" style={{ color: "var(--navy-deep)" }}>{labels[key]}</div>
+                    <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ background: "color-mix(in oklab, var(--emerald) 14%, white)", color: "var(--emerald-deep)" }}>
+                      {CHECKLISTS[key].length} steps
+                    </span>
+                  </div>
+                  <ul className="mt-4 space-y-3">
+                    {CHECKLISTS[key].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <CheckCircle2 className="h-4.5 w-4.5 mt-0.5 flex-shrink-0" style={{ color: "var(--emerald-deep)", width: 18, height: 18 }} />
+                        <span className="text-[14px] leading-relaxed" style={{ color: "var(--ink)" }}>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
+
 
       {/* 12. TESTIMONIALS */}
       <section className="mx-auto max-w-6xl px-6 py-24">
