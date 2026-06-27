@@ -391,9 +391,7 @@ function DirectionA() {
     }
   }
 
-  function checkPostcode() {
-    setPostcodeResult(getPostcodeResult(postcode));
-  }
+
 
   return (
     <div
