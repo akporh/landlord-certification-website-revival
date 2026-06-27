@@ -333,7 +333,6 @@ function DirectionA() {
   
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [expandedService, setExpandedService] = useState<string | null>(null);
-  const [activeChecklistTab, setActiveChecklistTab] = useState<keyof typeof CHECKLISTS>("CP12");
   const [postcode, setPostcode] = useState("");
   const [postcodeResult, setPostcodeResult] = useState<{ status: string; message: string } | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
