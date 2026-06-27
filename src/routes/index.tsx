@@ -313,15 +313,6 @@ const LONDON_BOROUGHS = [
   "Waltham Forest", "Wandsworth", "Westminster",
 ];
 
-function getPostcodeResult(code: string): { status: "covered" | "fringe" | "outside"; message: string } {
-  const upper = code.trim().toUpperCase().replace(/\s+/g, " ");
-  const londonInner = /^(E|EC|N|NW|SE|SW|W|WC)\d/;
-  const londonOuter = /^(BR|CR|DA|EN|HA|IG|KT|RM|SM|TW|UB|WD)\d/;
-  if (!upper) return { status: "outside", message: "" };
-  if (londonInner.test(upper)) return { status: "covered", message: "We cover your area — next-day slots available." };
-  if (londonOuter.test(upper)) return { status: "fringe", message: "M25 fringe area — call us to confirm availability: 0203 772 5959" };
-  return { status: "outside", message: "Outside our coverage area. Call us and we'll try to help: 0203 772 5959" };
-}
 
 type ChatMessage = {
   role: "ai" | "user" | "agent";
