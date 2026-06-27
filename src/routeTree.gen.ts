@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DirectionCRouteImport } from './routes/direction-c'
+import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 
 const DirectionCRoute = DirectionCRouteImport.update({
   id: '/direction-c',
   path: '/direction-c',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientsRoute = ClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,30 +37,34 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/direction-c' | '/api/chat'
+  fullPaths: '/' | '/clients' | '/direction-c' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/direction-c' | '/api/chat'
-  id: '__root__' | '/' | '/direction-c' | '/api/chat'
+  to: '/' | '/clients' | '/direction-c' | '/api/chat'
+  id: '__root__' | '/' | '/clients' | '/direction-c' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClientsRoute: typeof ClientsRoute
   DirectionCRoute: typeof DirectionCRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/direction-c'
       fullPath: '/direction-c'
       preLoaderRoute: typeof DirectionCRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clients': {
+      id: '/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClientsRoute: ClientsRoute,
   DirectionCRoute: DirectionCRoute,
   ApiChatRoute: ApiChatRoute,
 }

@@ -22,11 +22,9 @@ import {
   X,
   Send,
   MapPin,
-  Search,
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
-import { LondonBoroughMap } from "@/components/LondonBoroughMap";
 import stromaLogo from "@/assets/stroma.jpg";
 import trustmarkLogo from "@/assets/trustmark.jpg";
 import trustpilotLogo from "@/assets/trustpilot.svg";
@@ -44,7 +42,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Landlord Certificates, booked in 60 seconds" },
       {
         property: "og:description",
-        content: "London's calmest way to stay compliant. Certified engineers, fixed prices, next-day slots.",
+        content: "London's calmest way to stay compliant. Certified engineers, fixed prices, certificate emailed within 24 hours.",
       },
     ],
   }),
@@ -232,8 +230,8 @@ const USPS = [
   },
   {
     icon: Zap,
-    heading: "Same-day and next-day slots",
-    body: "Across all 32 London boroughs. SMS confirmation within 15 minutes.",
+    heading: "Fast London availability",
+    body: "Every borough covered. Most bookings confirmed within 15 minutes by SMS.",
   },
   {
     icon: Star,
@@ -245,7 +243,7 @@ const USPS = [
 const FAQS = [
   {
     q: "How quickly can an engineer attend?",
-    a: "Most London bookings get a same-day or next-day slot. Choose your preferred window at checkout and we confirm by SMS within 15 minutes.",
+    a: "Most London bookings are confirmed within 15 minutes by SMS. Choose your preferred window at checkout and we'll find the earliest available slot at your property.",
   },
   {
     q: "What happens if my property fails the inspection?",
@@ -315,15 +313,6 @@ const LONDON_BOROUGHS = [
   "Waltham Forest", "Wandsworth", "Westminster",
 ];
 
-function getPostcodeResult(code: string): { status: "covered" | "fringe" | "outside"; message: string } {
-  const upper = code.trim().toUpperCase().replace(/\s+/g, " ");
-  const londonInner = /^(E|EC|N|NW|SE|SW|W|WC)\d/;
-  const londonOuter = /^(BR|CR|DA|EN|HA|IG|KT|RM|SM|TW|UB|WD)\d/;
-  if (!upper) return { status: "outside", message: "" };
-  if (londonInner.test(upper)) return { status: "covered", message: "We cover your area — next-day slots available." };
-  if (londonOuter.test(upper)) return { status: "fringe", message: "M25 fringe area — call us to confirm availability: 0203 772 5959" };
-  return { status: "outside", message: "Outside our coverage area. Call us and we'll try to help: 0203 772 5959" };
-}
 
 type ChatMessage = {
   role: "ai" | "user" | "agent";
@@ -335,9 +324,8 @@ function DirectionA() {
   
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [expandedService, setExpandedService] = useState<string | null>(null);
-  const [activeChecklistTab, setActiveChecklistTab] = useState<keyof typeof CHECKLISTS>("CP12");
   const [postcode, setPostcode] = useState("");
-  const [postcodeResult, setPostcodeResult] = useState<{ status: string; message: string } | null>(null);
+  
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatEverOpened, setChatEverOpened] = useState(false);
@@ -403,9 +391,7 @@ function DirectionA() {
     }
   }
 
-  function checkPostcode() {
-    setPostcodeResult(getPostcodeResult(postcode));
-  }
+
 
   return (
     <div
@@ -432,9 +418,10 @@ function DirectionA() {
           </div>
           <nav className="hidden gap-7 text-sm md:flex" style={{ color: "var(--ink-soft)" }}>
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
-            <a href="#hmo" className="hover:text-[var(--navy)]">HMO</a>
-            <a href="#offers" className="hover:text-[var(--navy)]">Offers</a>
+            <a href="#commercial" className="hover:text-[var(--navy)]">Commercial</a>
+            <a href="#offers" className="hover:text-[var(--navy)]">Bundles</a>
             <a href="#coverage" className="hover:text-[var(--navy)]">Coverage</a>
+            <Link to="/clients" className="hover:text-[var(--navy)]">For Agents</Link>
             <a href="#faq" className="hover:text-[var(--navy)]">FAQ</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -659,13 +646,13 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 7. HMO & COMMERCIAL */}
-      <section id="hmo" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
+      {/* 7. COMMERCIAL & HMO */}
+      <section id="commercial" className="border-y" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>HMO & Commercial</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight">Certificates for HMOs and commercial properties.</h2>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--navy)" }}>Commercial & HMO</div>
+              <h2 className="mt-2 text-[32px] font-bold tracking-tight">Certificates for commercial properties and HMOs.</h2>
               <p className="mt-3 text-[15px] max-w-xl" style={{ color: "var(--ink-soft)" }}>
                 Legal requirements for Houses in Multiple Occupation, commercial premises and larger managed properties.
               </p>
@@ -795,7 +782,7 @@ function DirectionA() {
                   {/* Bottom progress bar / urgency strip */}
                   <div className="flex items-center gap-3 px-8 md:px-10 py-3" style={{ background: "rgba(0,0,0,0.2)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                     <CalendarClock className="h-4 w-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }} />
-                    <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Same-day engineer slots available across all London boroughs</span>
+                    <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Engineers available across all 32 London boroughs</span>
                   </div>
                 </div>
             ))}
@@ -816,180 +803,133 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 9. COVERAGE MAP */}
+      {/* 9. COVERAGE — Atmospheric London halo */}
       <section id="coverage" className="border-y" style={{ borderColor: "rgba(255,255,255,0.08)", background: "var(--navy-deep)" }}>
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr] items-start">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald)" }}>Coverage</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight" style={{ color: "white" }}>All 32 London boroughs.</h2>
-              <p className="mt-4 text-[15px]" style={{ color: "rgba(255,255,255,0.60)" }}>
-                Same-day and next-day slots across Greater London. M25 fringe areas covered — call to confirm.
-              </p>
-
-              <div className="mt-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="h-4 w-4" style={{ color: "var(--navy)" }} />
-                  <div className="text-[13px] font-semibold" style={{ color: "var(--navy)" }}>Check your postcode for instant availability</div>
-                </div>
-                <div
-                  className="flex items-center gap-1.5 rounded-xl border p-1.5 transition-shadow focus-within:shadow-[var(--shadow-xl)]"
-                  style={{ borderColor: "var(--line)", background: "white" }}
-                >
-                  <input
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value.toUpperCase())}
-                    onKeyDown={(e) => e.key === "Enter" && checkPostcode()}
-                    placeholder="e.g. E14 5AB"
-                    aria-label="Property postcode"
-                    className="flex-1 bg-transparent px-3 py-2 text-sm tracking-wide outline-none placeholder:text-[var(--ink-soft)]"
-                  />
-                  <button
-                    onClick={checkPostcode}
-                    className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-1.5 transition-transform active:scale-[0.98]"
-                    style={{ background: "var(--navy)" }}
-                  >
-                    <Search className="h-4 w-4" /> Check
-                  </button>
-                </div>
-                <div className="mt-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                  Greater London + M25 fringe — over 30 boroughs served.
-                </div>
-
-                {postcodeResult && postcodeResult.status && postcode.trim() && (() => {
-                  const covered = postcodeResult.status === "covered";
-                  const accent = covered ? "var(--emerald-deep)" : "oklch(0.62 0.16 65)";
-                  return (
-                    <div
-                      className="mt-4 overflow-hidden rounded-2xl border"
-                      style={{
-                        borderColor: covered
-                          ? "color-mix(in oklab, var(--emerald) 28%, white)"
-                          : "oklch(0.88 0.06 75)",
-                        background: covered
-                          ? "color-mix(in oklab, var(--emerald) 7%, white)"
-                          : "oklch(0.985 0.03 80)",
-                      }}
-                    >
-                      <div className="flex items-start gap-3 px-5 py-4">
-                        <div
-                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white"
-                          style={{ background: accent }}
-                        >
-                          {covered ? <CheckCircle2 className="h-5 w-5" /> : <Phone className="h-[18px] w-[18px]" />}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-[15px] font-bold leading-tight" style={{ color: covered ? "var(--emerald-deep)" : "var(--ink)" }}>
-                            {covered
-                              ? `Great news — we cover ${postcode.trim()}`
-                              : postcodeResult.status === "fringe"
-                              ? `${postcode.trim()} is on our M25 fringe`
-                              : `${postcode.trim()} is outside our usual area`}
-                          </div>
-                          <div className="mt-1 text-[13px]" style={{ color: "var(--ink-soft)" }}>
-                            {covered
-                              ? "Same-day slots available in your area. Book now."
-                              : "Call us to confirm availability."}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="flex flex-wrap items-center gap-2 border-t px-5 py-3"
-                        style={{ borderColor: covered ? "color-mix(in oklab, var(--emerald) 18%, white)" : "oklch(0.9 0.05 75)" }}
-                      >
-                        {covered ? (
-                          <>
-                            <a
-                              href="#quote"
-                              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition-transform active:scale-[0.98]"
-                              style={{ background: "var(--emerald-deep)" }}
-                            >
-                              Book your slot <ArrowRight className="h-4 w-4" />
-                            </a>
-                            <a
-                              href="tel:02037725959"
-                              className="inline-flex items-center gap-1.5 px-2 py-2 text-[13px] font-semibold"
-                              style={{ color: "var(--navy)" }}
-                            >
-                              <Phone className="h-3.5 w-3.5" /> 0203 772 5959
-                            </a>
-                          </>
-                        ) : (
-                          <a
-                            href="tel:02037725959"
-                            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition-transform active:scale-[0.98]"
-                            style={{ background: "var(--navy)" }}
-                          >
-                            <Phone className="h-4 w-4" /> Call 0203 772 5959
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div className="mt-8">
-                <div className="text-[13px] font-semibold mb-3" style={{ color: "var(--ink-soft)" }}>All boroughs covered</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {LONDON_BOROUGHS.map((b) => (
-                    <span key={b} className="text-[11px] px-2 py-0.5 rounded-md" style={{ background: "color-mix(in oklab, var(--navy) 8%, white)", color: "var(--navy)" }}>{b}</span>
-                  ))}
-                </div>
-              </div>
+        <div className="mx-auto max-w-6xl px-6 py-4">
+          <div className="relative overflow-hidden rounded-3xl px-8 py-24 md:px-16 md:py-32" style={{ background: "var(--navy-deep)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)" }}>
+            {/* Atmospheric London halo backdrop */}
+            <div className="pointer-events-none absolute inset-0 opacity-25">
+              <svg
+                className="absolute left-1/2 top-1/2 h-[140%] w-auto -translate-x-1/2 -translate-y-1/2"
+                viewBox="0 0 1000 800"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                style={{ color: "var(--emerald)" }}
+              >
+                {/* London silhouette — dashed */}
+                <path
+                  d="M500,100 Q600,80 750,150 T900,300 T850,550 T600,700 T400,750 T150,600 T100,350 T250,150 Z"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  strokeDasharray="4 8"
+                  opacity="0.5"
+                />
+                {/* Inner ring — solid */}
+                <path
+                  d="M500,150 Q580,130 700,200 T820,320 T780,500 T580,620 T420,670 T200,550 T160,380 T280,200 Z"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  opacity="0.4"
+                />
+                {/* Concentric rings */}
+                <circle cx="500" cy="400" r="220" stroke="currentColor" strokeWidth="0.5" opacity="0.12" />
+                <circle cx="500" cy="400" r="290" stroke="currentColor" strokeWidth="0.5" opacity="0.10" />
+                <circle cx="500" cy="400" r="360" stroke="currentColor" strokeWidth="0.5" opacity="0.08" />
+                {/* Thames — luminous emerald thread */}
+                <path
+                  d="M180,430 Q320,400 460,420 T740,430"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  opacity="0.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {/* Radial vignette to fade edges into navy */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "radial-gradient(ellipse at center, transparent 0%, rgba(15,28,68,0.6) 60%, var(--navy-deep) 100%)",
+                }}
+              />
             </div>
 
-            {/* SVG borough cartogram */}
-            <div className="rounded-2xl overflow-hidden border" style={{ borderColor: "rgba(255,255,255,0.1)", background: "var(--navy-deep)" }}>
-              <div className="p-5 overflow-x-auto">
-                <svg viewBox="0 0 492 268" xmlns="http://www.w3.org/2000/svg" className="w-full min-w-[380px]">
-                  {BOROUGH_TILES.map((b) => {
-                    const x = b.col * 54 + 3;
-                    const y = b.row * 38 + 3;
-                    return (
-                      <g key={b.name}>
-                        <rect
-                          x={x} y={y} width={50} height={33} rx={4}
-                          style={{
-                            fill: b.inner ? "var(--emerald)" : "rgba(255,255,255,0.10)",
-                            stroke: b.inner ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.12)",
-                            strokeWidth: 1,
-                          }}
-                        />
-                        <text
-                          x={x + 25} y={y + 11.5}
-                          fontSize="6.2" textAnchor="middle" dominantBaseline="middle"
-                          style={{
-                            fill: b.inner ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.65)",
-                            fontFamily: "system-ui, sans-serif",
-                            fontWeight: "700",
-                            letterSpacing: "0.08em",
-                          }}
-                        >
-                          {b.short}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
+            {/* Content */}
+            <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
+              <span className="mb-4 text-[11px] font-semibold tracking-[0.22em] uppercase" style={{ color: "var(--emerald)" }}>
+                Greater London Coverage
+              </span>
+
+              <h2 className="text-[40px] md:text-[64px] font-bold tracking-tight leading-[1.02] text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
+                We cover every<br />
+                <span style={{ color: "var(--emerald)" }}>London borough.</span>
+              </h2>
+
+              <p className="mt-6 max-w-xl text-[16px] md:text-[18px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+                From the heart of the Square Mile to the furthest reaches of the M25 fringe, our accredited engineers are always nearby.
+              </p>
+
+              {/* KPI stats */}
+              <div className="mt-16 grid w-full grid-cols-1 gap-8 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-4 items-center">
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-[36px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>32</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    London boroughs
+                  </span>
+                </div>
+                <div className="hidden md:block h-12 w-px" style={{ background: "rgba(255,255,255,0.1)" }} />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-6 w-6" style={{ color: "var(--emerald)" }} />
+                    <span className="text-[36px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>M25</span>
+                  </div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Fringe covered
+                  </span>
+                </div>
+                <div className="hidden md:block h-12 w-px" style={{ background: "rgba(255,255,255,0.1)" }} />
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-[36px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>24hr</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.15em]" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    Certificate email
+                  </span>
+                </div>
               </div>
-              <div className="border-t px-5 py-3 flex flex-wrap gap-5 text-xs" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <div className="flex items-center gap-2" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  <div className="h-3 w-6 rounded-sm" style={{ background: "var(--emerald)" }} />
-                  Same-day (Zone 1–2)
-                </div>
-                <div className="flex items-center gap-2" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  <div className="h-3 w-6 rounded-sm border" style={{ background: "rgba(255,255,255,0.10)", borderColor: "rgba(255,255,255,0.18)" }} />
-                  Next-day (Zone 3–4)
-                </div>
-                <a href="tel:02037725959" className="ml-auto flex items-center gap-1 font-medium" style={{ color: "var(--emerald)" }}>
-                  <Phone className="h-3 w-3" /> M25 fringe — call us
+
+              {/* CTA */}
+              <div className="mt-16">
+                <a
+                  href="tel:02037725959"
+                  className="group inline-flex items-center gap-6 rounded-full px-6 py-3 transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1)" }}
+                >
+                  <span
+                    className="flex h-11 w-11 items-center justify-center rounded-full"
+                    style={{ background: "var(--emerald)", color: "var(--navy-deep)" }}
+                  >
+                    <Phone className="h-4 w-4" />
+                  </span>
+                  <div className="flex flex-col items-start pr-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      Not sure? Call us
+                    </span>
+                    <span className="text-[18px] font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      0203 772 5959
+                    </span>
+                  </div>
                 </a>
               </div>
             </div>
+
+            {/* Bottom decor accent */}
+            <div
+              className="absolute bottom-0 left-1/2 h-px w-1/3 -translate-x-1/2"
+              style={{ background: "linear-gradient(to right, transparent, var(--emerald), transparent)", opacity: 0.3 }}
+            />
           </div>
         </div>
       </section>
+
 
       {/* 10. HOW IT WORKS */}
       <section id="how" className="border-b" style={{ borderColor: "var(--line)", background: "var(--cream)" }}>
@@ -1003,8 +943,8 @@ function DirectionA() {
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               { n: "01", t: "Choose & quote", d: "Pick the certificates you need for a live price, or call us and we'll find the earliest slot at your property.", icon: ClipboardCheck },
-              { n: "02", t: "Engineer visits", d: "A Gas Safe or NAPIT-registered engineer attends, with same-day and next-day slots across every London borough.", icon: CalendarClock },
-              { n: "03", t: "Certificate delivered", d: "Your signed PDF arrives by email the same day, stored securely in your landlord portal and shareable in one click.", icon: Mail },
+              { n: "02", t: "Engineer visits", d: "A Gas Safe or NAPIT-registered engineer attends at your chosen time, covering every London borough.", icon: CalendarClock },
+              { n: "03", t: "Certificate delivered", d: "Your signed PDF arrives by email within 24 hours, stored securely in your landlord portal and shareable in one click.", icon: Mail },
             ].map(({ n, t, d, icon: Icon }) => (
               <div key={n}>
                 <div className="flex items-center gap-3">
@@ -1021,47 +961,47 @@ function DirectionA() {
         </div>
       </section>
 
-      {/* 11. CHECKLISTS (tabbed) */}
+      {/* 11. CHECKLISTS — all visible at once */}
       <section className="border-b" style={{ borderColor: "var(--line)", background: "white" }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr] items-start">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
-              <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
-              <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
-                A little prep means our engineer is in and out faster — and your certificate lands in your inbox the same day.
-              </p>
-            </div>
-            <div>
-              {/* Tabs */}
-              <div className="flex rounded-lg border overflow-hidden mb-5" style={{ borderColor: "var(--line)" }}>
-                {(Object.keys(CHECKLISTS) as Array<keyof typeof CHECKLISTS>).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveChecklistTab(key)}
-                    className="flex-1 py-2 text-sm font-semibold transition-colors"
-                    style={{
-                      background: activeChecklistTab === key ? "var(--navy)" : "white",
-                      color: activeChecklistTab === key ? "white" : "var(--ink-soft)",
-                      borderRight: key !== "PAT" ? "1px solid var(--line)" : "none",
-                    }}
-                  >
-                    {key}
-                  </button>
-                ))}
-              </div>
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {CHECKLISTS[activeChecklistTab].map((item) => (
-                  <li key={item} className="flex items-start gap-3 rounded-xl border p-4" style={{ borderColor: "var(--line)" }}>
-                    <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: "var(--emerald-deep)" }} />
-                    <span className="text-[14px] leading-relaxed">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="max-w-2xl">
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--emerald-deep)" }}>Before we arrive</div>
+            <h2 className="mt-2 text-[32px] font-bold tracking-tight leading-tight">A two-minute checklist for a smooth inspection.</h2>
+            <p className="mt-4 text-[15px]" style={{ color: "var(--ink-soft)" }}>
+              A little prep means our engineer is in and out faster, and your certificate lands in your inbox sooner.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {(Object.keys(CHECKLISTS) as Array<keyof typeof CHECKLISTS>).map((key) => {
+              const labels: Record<string, string> = {
+                CP12: "Gas Safety (CP12)",
+                EICR: "Electrical (EICR)",
+                EPC: "Energy (EPC)",
+                PAT: "Portable Appliances (PAT)",
+              };
+              return (
+                <div key={key} className="rounded-2xl border p-7" style={{ borderColor: "var(--line)", background: "var(--cream)" }}>
+                  <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--line)" }}>
+                    <div className="text-[15px] font-bold" style={{ color: "var(--navy-deep)" }}>{labels[key]}</div>
+                    <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ background: "color-mix(in oklab, var(--emerald) 14%, white)", color: "var(--emerald-deep)" }}>
+                      {CHECKLISTS[key].length} steps
+                    </span>
+                  </div>
+                  <ul className="mt-4 space-y-3">
+                    {CHECKLISTS[key].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <CheckCircle2 className="h-4.5 w-4.5 mt-0.5 flex-shrink-0" style={{ color: "var(--emerald-deep)", width: 18, height: 18 }} />
+                        <span className="text-[14px] leading-relaxed" style={{ color: "var(--ink)" }}>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
+
 
       {/* 12. TESTIMONIALS */}
       <section className="mx-auto max-w-6xl px-6 py-24">
