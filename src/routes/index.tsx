@@ -796,7 +796,7 @@ function DirectionA() {
                   {/* Bottom progress bar / urgency strip */}
                   <div className="flex items-center gap-3 px-8 md:px-10 py-3" style={{ background: "rgba(0,0,0,0.2)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                     <CalendarClock className="h-4 w-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.4)" }} />
-                    <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Same-day engineer slots available across all London boroughs</span>
+                    <span className="text-[12px]" style={{ color: "rgba(255,255,255,0.5)" }}>Engineers available across all 32 London boroughs</span>
                   </div>
                 </div>
             ))}
