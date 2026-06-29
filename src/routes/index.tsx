@@ -22,8 +22,6 @@ import {
   X,
   Send,
   MapPin,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
@@ -31,6 +29,7 @@ import stromaLogo from "@/assets/stroma.jpg";
 import trustmarkLogo from "@/assets/trustmark.jpg";
 import trustpilotLogo from "@/assets/trustpilot.svg";
 import lcLogo from "@/assets/lc-logo.png";
+import lcBot from "@/assets/lc-bot.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -338,7 +337,6 @@ function DirectionA() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
-  const [activeCanvas, setActiveCanvas] = useState<{ type: string; data: Record<string, unknown> } | null>(null);
   const [handoffActive, setHandoffActive] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -1110,183 +1108,166 @@ function DirectionA() {
 
       <FixedDealPill />
 
-      {/* AI CHAT WIDGET */}
+      {/* AI CHAT WIDGET — contemporary */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {chatOpen && (
           <div
-            className="flex flex-col rounded-2xl overflow-hidden"
+            className="flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
             style={{
-              width: 380,
-              height: 520,
-              boxShadow: "var(--shadow-xl)",
-              border: "1px solid rgba(27,87,154,0.15)",
+              width: 400,
+              height: 640,
+              maxHeight: "calc(100vh - 120px)",
+              borderRadius: 28,
+              boxShadow: "0 30px 80px -20px rgba(15,30,60,0.35), 0 10px 30px -10px rgba(15,30,60,0.2)",
+              border: "1px solid rgba(15,30,60,0.06)",
               background: "white",
             }}
           >
-            {/* Chat header */}
-            <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: "var(--navy)" }}>
-              {activeCanvas ? (
-                <button
-                  onClick={() => setActiveCanvas(null)}
-                  className="flex items-center gap-1.5 text-white opacity-80 hover:opacity-100 transition-opacity"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span className="text-[13px] font-medium">Back to chat</span>
-                </button>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <img src={lcLogo} alt="LC" className="h-7 w-auto brightness-0 invert" />
-                  <div>
-                    <div className="text-[14px] font-semibold text-white">LC Assistant</div>
-                    <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>⚡ Powered by onAiR</div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
+              <div className="flex items-center gap-3">
+                <div className="relative h-11 w-11 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--emerald) 18%, white), color-mix(in oklab, var(--navy) 8%, white))" }}>
+                  <img src={lcBot} alt="LC bot" className="h-12 w-12 object-contain -mb-1" />
+                </div>
+                <div>
+                  <div className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>LC Assistant</div>
+                  <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                    <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
+                    Online · replies instantly
                   </div>
                 </div>
-              )}
-              <button onClick={() => { setActiveCanvas(null); setChatOpen(false); }} className="text-white opacity-70 hover:opacity-100">
+              </div>
+              <button onClick={() => setChatOpen(false)} className="rounded-full p-1.5 hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {activeCanvas ? (
-              /* Fullscreen canvas view */
-              <div className="flex-1 overflow-y-auto p-5" style={{ background: "oklch(0.98 0.005 255)" }}>
-                <ChatCanvas canvas={activeCanvas} fullscreen />
-              </div>
-            ) : (
-              <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ background: "oklch(0.98 0.005 255)" }}>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4" style={{ background: "white" }}>
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={i} className={`flex animate-in fade-in slide-in-from-bottom-1 duration-300 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.role === "agent" && (
                     <div className="w-full">
-                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-1 px-1" style={{ color: "var(--emerald-deep)" }}>── Sarah joined ──</div>
-                      <div
-                        className="rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[85%]"
-                        style={{
-                          background: "color-mix(in oklab, var(--emerald) 8%, white)",
-                          border: "1px solid color-mix(in oklab, var(--emerald) 20%, white)",
-                          borderRadius: "12px 12px 12px 2px",
-                        }}
-                      >
-                        {msg.content}
+                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: "var(--emerald-deep)" }}>Sarah joined the chat</div>
+                      <div className="flex gap-2.5 items-start">
+                        <div className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background: "var(--emerald-deep)" }}>S</div>
+                        <div className="text-[14px] leading-relaxed pt-1" style={{ color: "var(--ink)" }}>{msg.content}</div>
                       </div>
                     </div>
                   )}
                   {msg.role === "ai" && (
-                    <div
-                      className="rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[85%]"
-                      style={{
-                        background: "white",
-                        border: "1px solid var(--line)",
-                        borderRadius: "12px 12px 12px 2px",
-                      }}
-                    >
-                      {msg.content}
-                      {msg.canvas && (
-                        <button
-                          onClick={() => setActiveCanvas(msg.canvas!)}
-                          className="mt-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-opacity hover:opacity-80"
-                          style={{ background: "var(--navy-faint)", color: "var(--navy)", border: "1px solid color-mix(in oklab, var(--navy) 15%, white)" }}
-                        >
-                          <ChevronRight className="h-3.5 w-3.5" />
-                          View details
-                        </button>
-                      )}
+                    <div className="flex gap-2.5 items-start max-w-[88%]">
+                      <img src={lcBot} alt="" className="h-8 w-8 object-contain flex-shrink-0 rounded-full" style={{ background: "color-mix(in oklab, var(--emerald) 10%, white)" }} />
+                      <div className="min-w-0">
+                        <div className="text-[14px] leading-relaxed whitespace-pre-line pt-1" style={{ color: "var(--ink)" }}>{msg.content}</div>
+                        {msg.canvas && <ChatCanvas canvas={msg.canvas} onSend={sendMessage} />}
+                      </div>
                     </div>
                   )}
                   {msg.role === "user" && (
                     <div
-                      className="rounded-2xl px-4 py-3 text-[14px] leading-relaxed max-w-[85%] text-white"
-                      style={{ background: "var(--navy)", borderRadius: "12px 12px 2px 12px" }}
+                      className="px-4 py-2.5 text-[14px] leading-relaxed max-w-[80%] text-white"
+                      style={{ background: "var(--emerald-deep)", borderRadius: "20px 20px 4px 20px" }}
                     >
                       {msg.content}
                     </div>
                   )}
                 </div>
               ))}
-              {/* Quick action buttons — only before user has typed anything */}
               {!handoffActive && messages.length === 1 && !chatLoading && (
-                <div className="flex flex-col gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 pl-10 pt-1">
                   {[
-                    { emoji: "💷", label: "Get a quote", message: "How much for a Gas Safety certificate?" },
-                    { emoji: "📍", label: "Check coverage", message: "Do you cover my area?" },
-                    { emoji: "🗂", label: "My certificates", message: "When is my certificate due for renewal?" },
-                    { emoji: "📞", label: "Talk to someone", message: "I want to speak to someone please" },
-                  ].map(({ emoji, label, message }) => (
+                    { label: "See my certificate", message: "Can I see my gas safety certificate?" },
+                    { label: "Get a quote", message: "How much for a 2-bed Gas Safety with 3 appliances?" },
+                    { label: "Check coverage", message: "Do you cover SW18?" },
+                    { label: "Book a slot", message: "Can I book now?" },
+                    { label: "When is mine due?", message: "When is my gas safety certificate due?" },
+                    { label: "What's a C2 code?", message: "My EICR says C2 — what does that mean?" },
+                  ].map(({ label, message }) => (
                     <button
                       key={label}
                       onClick={() => sendMessage(message)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors hover:opacity-90"
-                      style={{ background: "white", border: "1px solid var(--line)", color: "var(--navy)" }}
+                      className="rounded-full px-3 py-1.5 text-[12px] font-medium transition-all hover:scale-[1.02]"
+                      style={{ background: "color-mix(in oklab, var(--emerald) 8%, white)", border: "1px solid color-mix(in oklab, var(--emerald) 20%, white)", color: "var(--emerald-deep)" }}
                     >
-                      <span>{emoji}</span>
-                      <span>{label}</span>
+                      {label}
                     </button>
                   ))}
                 </div>
               )}
               {chatLoading && (
-                <div className="flex justify-start">
-                  <div className="rounded-2xl px-4 py-3 text-[14px]" style={{ background: "white", border: "1px solid var(--line)", borderRadius: "12px 12px 12px 2px" }}>
-                    <span className="inline-flex gap-1">
-                      <span className="animate-bounce">·</span>
-                      <span className="animate-bounce" style={{ animationDelay: "0.1s" }}>·</span>
-                      <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>·</span>
-                    </span>
+                <div className="flex gap-2.5 items-start">
+                  <img src={lcBot} alt="" className="h-8 w-8 object-contain flex-shrink-0 rounded-full" style={{ background: "color-mix(in oklab, var(--emerald) 10%, white)" }} />
+                  <div className="flex gap-1 pt-3">
+                    <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "var(--ink-soft)" }} />
+                    <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "var(--ink-soft)", animationDelay: "0.15s" }} />
+                    <span className="h-1.5 w-1.5 rounded-full animate-bounce" style={{ background: "var(--ink-soft)", animationDelay: "0.3s" }} />
                   </div>
                 </div>
               )}
               <div ref={chatEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="flex gap-2 p-3 border-t" style={{ borderColor: "var(--line)" }}>
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder={handoffActive ? "Chat with Sarah..." : "Ask about pricing, coverage..."}
-                className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none focus:border-[var(--navy)]"
-                style={{ borderColor: "var(--line)" }}
-              />
-              <button
-                onClick={() => sendMessage()}
-                disabled={chatLoading || !chatInput.trim()}
-                className="rounded-lg px-3 py-2 text-white disabled:opacity-40"
-                style={{ background: "var(--navy)" }}
-              >
-                <Send className="h-4 w-4" />
-              </button>
+            {/* Composer */}
+            <div className="p-3 flex-shrink-0">
+              <div className="flex items-center gap-2 rounded-2xl px-2 py-1.5" style={{ background: "color-mix(in oklab, var(--navy) 4%, white)", border: "1px solid rgba(15,30,60,0.08)" }}>
+                <input
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  placeholder={handoffActive ? "Chat with Sarah..." : "Message LC Assistant..."}
+                  className="flex-1 bg-transparent px-2 py-2 text-[14px] outline-none placeholder:opacity-50"
+                  style={{ color: "var(--ink)" }}
+                />
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="h-9 w-9 rounded-full flex items-center justify-center text-white disabled:opacity-30 transition-all hover:scale-105 disabled:scale-100"
+                  style={{ background: "var(--emerald-deep)" }}
+                  aria-label="Send"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="text-center text-[10px] mt-2" style={{ color: "var(--ink-soft)", opacity: 0.6 }}>
+                Powered by on-ai-rails
+              </div>
             </div>
-            </>
-            )}
           </div>
         )}
 
-        {/* "Ask us anything" tooltip — first hover, before first open */}
-        {!chatOpen && !chatEverOpened && showTooltip && (
-          <div
-            className="mb-2 rounded-lg px-3 py-2 text-[13px] font-medium text-white pointer-events-none"
-            style={{ background: "var(--navy)", boxShadow: "var(--shadow-md)", whiteSpace: "nowrap" }}
-          >
-            Ask us anything
+        {/* Launcher */}
+        {!chatOpen && (
+          <div className="flex items-center gap-3">
+            {!chatEverOpened && showTooltip && (
+              <div
+                className="rounded-2xl px-3.5 py-2 text-[13px] font-medium pointer-events-none animate-in fade-in slide-in-from-right-2"
+                style={{ background: "white", color: "var(--ink)", boxShadow: "0 10px 30px -10px rgba(15,30,60,0.2)", border: "1px solid rgba(15,30,60,0.06)", whiteSpace: "nowrap" }}
+              >
+                👋 Hi, ask me anything
+              </div>
+            )}
+            <div className="relative">
+              {pulseActive && (
+                <span className="absolute inset-0 rounded-full animate-ping opacity-40" style={{ background: "var(--emerald)" }} />
+              )}
+              <button
+                onClick={openChat}
+                onMouseEnter={() => !chatEverOpened && setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                className="relative flex h-16 w-16 items-center justify-center rounded-full overflow-hidden transition-transform hover:scale-105"
+                style={{
+                  background: "white",
+                  boxShadow: "0 12px 32px -8px rgba(15,30,60,0.35), 0 4px 12px -4px rgba(15,30,60,0.2)",
+                  border: "2px solid color-mix(in oklab, var(--emerald) 25%, white)",
+                }}
+                aria-label="Open LC Assistant"
+              >
+                <img src={lcBot} alt="LC bot" className="h-[72px] w-[72px] object-contain object-top -mb-2" />
+              </button>
+            </div>
           </div>
         )}
-        <div className="relative">
-          {pulseActive && !chatOpen && (
-            <span className="absolute inset-0 rounded-full animate-ping opacity-60" style={{ background: "var(--navy)" }} />
-          )}
-          <button
-            onClick={() => (chatOpen ? setChatOpen(false) : openChat())}
-            onMouseEnter={() => !chatEverOpened && setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-            className="relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg"
-            style={{ background: "var(--navy)", boxShadow: "var(--shadow-lg)" }}
-          >
-            {chatOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -1336,219 +1317,59 @@ function FixedDealPill() {
 }
 
 const POSTCODE_ZONES: Record<string, { borough: string; zone: "same-day" | "next-day" }> = {
-  // Inner London — same-day
-  E1:   { borough: "Tower Hamlets",        zone: "same-day" },
-  E2:   { borough: "Tower Hamlets",        zone: "same-day" },
-  E3:   { borough: "Tower Hamlets",        zone: "same-day" },
-  E14:  { borough: "Tower Hamlets",        zone: "same-day" },
-  E5:   { borough: "Hackney",              zone: "same-day" },
-  E8:   { borough: "Hackney",              zone: "same-day" },
-  E9:   { borough: "Hackney",              zone: "same-day" },
-  EC1:  { borough: "Islington",            zone: "same-day" },
-  EC2:  { borough: "City of London",       zone: "same-day" },
-  EC3:  { borough: "City of London",       zone: "same-day" },
-  EC4:  { borough: "City of London",       zone: "same-day" },
-  N1:   { borough: "Islington",            zone: "same-day" },
-  N4:   { borough: "Islington",            zone: "same-day" },
-  N5:   { borough: "Islington",            zone: "same-day" },
-  N7:   { borough: "Islington",            zone: "same-day" },
-  N16:  { borough: "Hackney",              zone: "same-day" },
-  N19:  { borough: "Islington",            zone: "same-day" },
-  NW1:  { borough: "Camden",               zone: "same-day" },
-  NW3:  { borough: "Camden",               zone: "same-day" },
-  NW5:  { borough: "Camden",               zone: "same-day" },
-  NW6:  { borough: "Brent",               zone: "same-day" },
-  NW8:  { borough: "Westminster",          zone: "same-day" },
-  W1:   { borough: "Westminster",          zone: "same-day" },
-  W2:   { borough: "Westminster",          zone: "same-day" },
-  W6:   { borough: "Hammersmith & Fulham", zone: "same-day" },
-  W8:   { borough: "Kensington & Chelsea", zone: "same-day" },
-  W10:  { borough: "Kensington & Chelsea", zone: "same-day" },
-  W11:  { borough: "Kensington & Chelsea", zone: "same-day" },
-  W12:  { borough: "Hammersmith & Fulham", zone: "same-day" },
-  W14:  { borough: "Hammersmith & Fulham", zone: "same-day" },
-  WC1:  { borough: "Camden",               zone: "same-day" },
-  WC2:  { borough: "Westminster",          zone: "same-day" },
-  SW1:  { borough: "Westminster",          zone: "same-day" },
-  SW3:  { borough: "Kensington & Chelsea", zone: "same-day" },
-  SW5:  { borough: "Kensington & Chelsea", zone: "same-day" },
-  SW6:  { borough: "Hammersmith & Fulham", zone: "same-day" },
-  SW7:  { borough: "Kensington & Chelsea", zone: "same-day" },
-  SW8:  { borough: "Lambeth",              zone: "same-day" },
-  SW9:  { borough: "Lambeth",              zone: "same-day" },
-  SW10: { borough: "Kensington & Chelsea", zone: "same-day" },
-  SW11: { borough: "Wandsworth",           zone: "same-day" },
-  SW12: { borough: "Wandsworth",           zone: "same-day" },
-  SW15: { borough: "Wandsworth",           zone: "same-day" },
-  SW17: { borough: "Wandsworth",           zone: "same-day" },
-  SW18: { borough: "Wandsworth",           zone: "same-day" },
-  SE1:  { borough: "Southwark",            zone: "same-day" },
-  SE5:  { borough: "Southwark",            zone: "same-day" },
-  SE8:  { borough: "Lewisham",             zone: "same-day" },
-  SE10: { borough: "Greenwich",            zone: "same-day" },
-  SE11: { borough: "Lambeth",              zone: "same-day" },
-  SE15: { borough: "Southwark",            zone: "same-day" },
-  SE16: { borough: "Southwark",            zone: "same-day" },
-  SE17: { borough: "Southwark",            zone: "same-day" },
-  SE24: { borough: "Lambeth",              zone: "same-day" },
-  // Outer London — next-day
-  E4:   { borough: "Waltham Forest",       zone: "next-day" },
-  E6:   { borough: "Newham",              zone: "next-day" },
-  E7:   { borough: "Newham",              zone: "next-day" },
-  E10:  { borough: "Waltham Forest",       zone: "next-day" },
-  E11:  { borough: "Waltham Forest",       zone: "next-day" },
-  E12:  { borough: "Newham",              zone: "next-day" },
-  E13:  { borough: "Newham",              zone: "next-day" },
-  E15:  { borough: "Newham",              zone: "next-day" },
-  E16:  { borough: "Newham",              zone: "next-day" },
-  E17:  { borough: "Waltham Forest",       zone: "next-day" },
-  E18:  { borough: "Redbridge",            zone: "next-day" },
-  N2:   { borough: "Barnet",              zone: "next-day" },
-  N3:   { borough: "Barnet",              zone: "next-day" },
-  N6:   { borough: "Haringey",             zone: "next-day" },
-  N8:   { borough: "Haringey",             zone: "next-day" },
-  N9:   { borough: "Enfield",              zone: "next-day" },
-  N10:  { borough: "Haringey",             zone: "next-day" },
-  N11:  { borough: "Enfield",              zone: "next-day" },
-  N12:  { borough: "Barnet",              zone: "next-day" },
-  N13:  { borough: "Enfield",              zone: "next-day" },
-  N14:  { borough: "Enfield",              zone: "next-day" },
-  N15:  { borough: "Haringey",             zone: "next-day" },
-  N17:  { borough: "Haringey",             zone: "next-day" },
-  N18:  { borough: "Enfield",              zone: "next-day" },
-  N20:  { borough: "Barnet",              zone: "next-day" },
-  N21:  { borough: "Enfield",              zone: "next-day" },
-  N22:  { borough: "Haringey",             zone: "next-day" },
-  NW2:  { borough: "Brent",               zone: "next-day" },
-  NW4:  { borough: "Barnet",              zone: "next-day" },
-  NW7:  { borough: "Barnet",              zone: "next-day" },
-  NW9:  { borough: "Brent",               zone: "next-day" },
-  NW10: { borough: "Brent",               zone: "next-day" },
-  NW11: { borough: "Barnet",              zone: "next-day" },
-  W3:   { borough: "Ealing",              zone: "next-day" },
-  W4:   { borough: "Hounslow",             zone: "next-day" },
-  W5:   { borough: "Ealing",              zone: "next-day" },
-  W7:   { borough: "Ealing",              zone: "next-day" },
-  W13:  { borough: "Ealing",              zone: "next-day" },
-  SW13: { borough: "Richmond upon Thames", zone: "next-day" },
-  SW14: { borough: "Richmond upon Thames", zone: "next-day" },
-  SW16: { borough: "Merton",              zone: "next-day" },
-  SW19: { borough: "Merton",              zone: "next-day" },
-  SW20: { borough: "Merton",              zone: "next-day" },
-  SE2:  { borough: "Bexley",              zone: "next-day" },
-  SE3:  { borough: "Lewisham",             zone: "next-day" },
-  SE4:  { borough: "Lewisham",             zone: "next-day" },
-  SE6:  { borough: "Lewisham",             zone: "next-day" },
-  SE7:  { borough: "Greenwich",            zone: "next-day" },
-  SE9:  { borough: "Greenwich",            zone: "next-day" },
-  SE12: { borough: "Lewisham",             zone: "next-day" },
-  SE13: { borough: "Lewisham",             zone: "next-day" },
-  SE14: { borough: "Lewisham",             zone: "next-day" },
-  SE18: { borough: "Greenwich",            zone: "next-day" },
-  SE19: { borough: "Bromley",              zone: "next-day" },
-  SE20: { borough: "Bromley",              zone: "next-day" },
-  SE23: { borough: "Lewisham",             zone: "next-day" },
-  SE25: { borough: "Croydon",              zone: "next-day" },
-  SE26: { borough: "Bromley",              zone: "next-day" },
-  SE27: { borough: "Lambeth",              zone: "next-day" },
-  HA1:  { borough: "Harrow",              zone: "next-day" },
-  HA2:  { borough: "Harrow",              zone: "next-day" },
-  HA3:  { borough: "Harrow",              zone: "next-day" },
-  HA4:  { borough: "Hillingdon",           zone: "next-day" },
-  HA5:  { borough: "Harrow",              zone: "next-day" },
-  HA6:  { borough: "Hillingdon",           zone: "next-day" },
-  UB1:  { borough: "Ealing",              zone: "next-day" },
-  UB2:  { borough: "Ealing",              zone: "next-day" },
-  UB3:  { borough: "Hillingdon",           zone: "next-day" },
-  UB4:  { borough: "Hillingdon",           zone: "next-day" },
-  UB5:  { borough: "Ealing",              zone: "next-day" },
-  UB6:  { borough: "Ealing",              zone: "next-day" },
-  TW1:  { borough: "Richmond upon Thames", zone: "next-day" },
-  TW2:  { borough: "Hounslow",             zone: "next-day" },
-  TW3:  { borough: "Hounslow",             zone: "next-day" },
-  TW4:  { borough: "Hounslow",             zone: "next-day" },
-  TW5:  { borough: "Hounslow",             zone: "next-day" },
-  TW7:  { borough: "Hounslow",             zone: "next-day" },
-  TW8:  { borough: "Hounslow",             zone: "next-day" },
-  TW9:  { borough: "Richmond upon Thames", zone: "next-day" },
-  TW10: { borough: "Richmond upon Thames", zone: "next-day" },
-  TW11: { borough: "Richmond upon Thames", zone: "next-day" },
-  TW12: { borough: "Richmond upon Thames", zone: "next-day" },
-  TW13: { borough: "Hounslow",             zone: "next-day" },
-  KT1:  { borough: "Kingston upon Thames", zone: "next-day" },
-  KT2:  { borough: "Kingston upon Thames", zone: "next-day" },
-  KT3:  { borough: "Merton",              zone: "next-day" },
-  KT4:  { borough: "Sutton",              zone: "next-day" },
-  SM1:  { borough: "Sutton",              zone: "next-day" },
-  SM2:  { borough: "Sutton",              zone: "next-day" },
-  SM3:  { borough: "Sutton",              zone: "next-day" },
-  SM4:  { borough: "Merton",              zone: "next-day" },
-  SM5:  { borough: "Sutton",              zone: "next-day" },
-  SM6:  { borough: "Sutton",              zone: "next-day" },
-  CR0:  { borough: "Croydon",              zone: "next-day" },
-  CR2:  { borough: "Croydon",              zone: "next-day" },
-  CR4:  { borough: "Merton",              zone: "next-day" },
-  CR5:  { borough: "Croydon",              zone: "next-day" },
-  CR7:  { borough: "Croydon",              zone: "next-day" },
-  CR8:  { borough: "Croydon",              zone: "next-day" },
-  BR1:  { borough: "Bromley",              zone: "next-day" },
-  BR2:  { borough: "Bromley",              zone: "next-day" },
-  BR3:  { borough: "Bromley",              zone: "next-day" },
-  BR4:  { borough: "Bromley",              zone: "next-day" },
-  BR5:  { borough: "Bromley",              zone: "next-day" },
-  BR6:  { borough: "Bromley",              zone: "next-day" },
-  DA1:  { borough: "Bexley",              zone: "next-day" },
-  DA5:  { borough: "Bexley",              zone: "next-day" },
-  DA6:  { borough: "Bexley",              zone: "next-day" },
-  DA7:  { borough: "Bexley",              zone: "next-day" },
-  DA8:  { borough: "Bexley",              zone: "next-day" },
-  DA15: { borough: "Bexley",              zone: "next-day" },
-  DA16: { borough: "Bexley",              zone: "next-day" },
-  DA17: { borough: "Bexley",              zone: "next-day" },
-  DA18: { borough: "Bexley",              zone: "next-day" },
-  RM1:  { borough: "Havering",             zone: "next-day" },
-  RM2:  { borough: "Havering",             zone: "next-day" },
-  RM3:  { borough: "Havering",             zone: "next-day" },
-  RM7:  { borough: "Havering",             zone: "next-day" },
-  RM8:  { borough: "Barking & Dagenham",   zone: "next-day" },
-  RM9:  { borough: "Barking & Dagenham",   zone: "next-day" },
-  RM10: { borough: "Barking & Dagenham",   zone: "next-day" },
-  RM12: { borough: "Havering",             zone: "next-day" },
-  RM13: { borough: "Havering",             zone: "next-day" },
-  IG1:  { borough: "Redbridge",            zone: "next-day" },
-  IG2:  { borough: "Redbridge",            zone: "next-day" },
-  IG3:  { borough: "Redbridge",            zone: "next-day" },
-  IG4:  { borough: "Redbridge",            zone: "next-day" },
-  IG5:  { borough: "Redbridge",            zone: "next-day" },
-  IG6:  { borough: "Redbridge",            zone: "next-day" },
-  IG11: { borough: "Barking & Dagenham",   zone: "next-day" },
+  E1:{borough:"Tower Hamlets",zone:"same-day"},E2:{borough:"Tower Hamlets",zone:"same-day"},E3:{borough:"Tower Hamlets",zone:"same-day"},E14:{borough:"Tower Hamlets",zone:"same-day"},
+  E5:{borough:"Hackney",zone:"same-day"},E8:{borough:"Hackney",zone:"same-day"},E9:{borough:"Hackney",zone:"same-day"},N16:{borough:"Hackney",zone:"same-day"},
+  EC1:{borough:"Islington",zone:"same-day"},EC2:{borough:"City of London",zone:"same-day"},EC3:{borough:"City of London",zone:"same-day"},EC4:{borough:"City of London",zone:"same-day"},
+  N1:{borough:"Islington",zone:"same-day"},N4:{borough:"Islington",zone:"same-day"},N5:{borough:"Islington",zone:"same-day"},N7:{borough:"Islington",zone:"same-day"},N19:{borough:"Islington",zone:"same-day"},
+  NW1:{borough:"Camden",zone:"same-day"},NW3:{borough:"Camden",zone:"same-day"},NW5:{borough:"Camden",zone:"same-day"},WC1:{borough:"Camden",zone:"same-day"},
+  NW6:{borough:"Brent",zone:"same-day"},NW8:{borough:"Westminster",zone:"same-day"},W1:{borough:"Westminster",zone:"same-day"},W2:{borough:"Westminster",zone:"same-day"},WC2:{borough:"Westminster",zone:"same-day"},
+  W6:{borough:"Hammersmith & Fulham",zone:"same-day"},W12:{borough:"Hammersmith & Fulham",zone:"same-day"},W14:{borough:"Hammersmith & Fulham",zone:"same-day"},
+  W8:{borough:"Kensington & Chelsea",zone:"same-day"},W10:{borough:"Kensington & Chelsea",zone:"same-day"},W11:{borough:"Kensington & Chelsea",zone:"same-day"},
+  SW1:{borough:"Westminster",zone:"same-day"},SW3:{borough:"Kensington & Chelsea",zone:"same-day"},SW5:{borough:"Kensington & Chelsea",zone:"same-day"},SW7:{borough:"Kensington & Chelsea",zone:"same-day"},SW10:{borough:"Kensington & Chelsea",zone:"same-day"},
+  SW6:{borough:"Hammersmith & Fulham",zone:"same-day"},SW8:{borough:"Lambeth",zone:"same-day"},SW9:{borough:"Lambeth",zone:"same-day"},SW11:{borough:"Wandsworth",zone:"same-day"},
+  SW12:{borough:"Wandsworth",zone:"same-day"},SW15:{borough:"Wandsworth",zone:"same-day"},SW17:{borough:"Wandsworth",zone:"same-day"},SW18:{borough:"Wandsworth",zone:"same-day"},
+  SE1:{borough:"Southwark",zone:"same-day"},SE5:{borough:"Southwark",zone:"same-day"},SE8:{borough:"Lewisham",zone:"same-day"},SE10:{borough:"Greenwich",zone:"same-day"},
+  SE11:{borough:"Lambeth",zone:"same-day"},SE15:{borough:"Southwark",zone:"same-day"},SE16:{borough:"Southwark",zone:"same-day"},SE17:{borough:"Southwark",zone:"same-day"},SE24:{borough:"Lambeth",zone:"same-day"},
+  E4:{borough:"Waltham Forest",zone:"next-day"},E6:{borough:"Newham",zone:"next-day"},E7:{borough:"Newham",zone:"next-day"},E10:{borough:"Waltham Forest",zone:"next-day"},E11:{borough:"Waltham Forest",zone:"next-day"},
+  E12:{borough:"Newham",zone:"next-day"},E13:{borough:"Newham",zone:"next-day"},E15:{borough:"Newham",zone:"next-day"},E16:{borough:"Newham",zone:"next-day"},E17:{borough:"Waltham Forest",zone:"next-day"},E18:{borough:"Redbridge",zone:"next-day"},
+  N2:{borough:"Barnet",zone:"next-day"},N3:{borough:"Barnet",zone:"next-day"},N6:{borough:"Haringey",zone:"next-day"},N8:{borough:"Haringey",zone:"next-day"},N9:{borough:"Enfield",zone:"next-day"},
+  N10:{borough:"Haringey",zone:"next-day"},N11:{borough:"Enfield",zone:"next-day"},N12:{borough:"Barnet",zone:"next-day"},N13:{borough:"Enfield",zone:"next-day"},N14:{borough:"Enfield",zone:"next-day"},
+  N15:{borough:"Haringey",zone:"next-day"},N17:{borough:"Haringey",zone:"next-day"},N18:{borough:"Enfield",zone:"next-day"},N20:{borough:"Barnet",zone:"next-day"},N21:{borough:"Enfield",zone:"next-day"},N22:{borough:"Haringey",zone:"next-day"},
+  NW2:{borough:"Brent",zone:"next-day"},NW4:{borough:"Barnet",zone:"next-day"},NW7:{borough:"Barnet",zone:"next-day"},NW9:{borough:"Brent",zone:"next-day"},NW10:{borough:"Brent",zone:"next-day"},NW11:{borough:"Barnet",zone:"next-day"},
+  W3:{borough:"Ealing",zone:"next-day"},W4:{borough:"Hounslow",zone:"next-day"},W5:{borough:"Ealing",zone:"next-day"},W7:{borough:"Ealing",zone:"next-day"},W13:{borough:"Ealing",zone:"next-day"},
+  SW2:{borough:"Lambeth",zone:"next-day"},SW13:{borough:"Richmond upon Thames",zone:"next-day"},SW14:{borough:"Richmond upon Thames",zone:"next-day"},SW16:{borough:"Merton",zone:"next-day"},SW19:{borough:"Merton",zone:"next-day"},SW20:{borough:"Merton",zone:"next-day"},
+  SE2:{borough:"Bexley",zone:"next-day"},SE3:{borough:"Lewisham",zone:"next-day"},SE4:{borough:"Lewisham",zone:"next-day"},SE6:{borough:"Lewisham",zone:"next-day"},SE7:{borough:"Greenwich",zone:"next-day"},
+  SE9:{borough:"Greenwich",zone:"next-day"},SE12:{borough:"Lewisham",zone:"next-day"},SE13:{borough:"Lewisham",zone:"next-day"},SE14:{borough:"Lewisham",zone:"next-day"},SE18:{borough:"Greenwich",zone:"next-day"},
+  SE19:{borough:"Bromley",zone:"next-day"},SE20:{borough:"Bromley",zone:"next-day"},SE23:{borough:"Lewisham",zone:"next-day"},SE25:{borough:"Croydon",zone:"next-day"},SE26:{borough:"Bromley",zone:"next-day"},SE27:{borough:"Lambeth",zone:"next-day"},
+  HA1:{borough:"Harrow",zone:"next-day"},HA2:{borough:"Harrow",zone:"next-day"},HA3:{borough:"Harrow",zone:"next-day"},HA4:{borough:"Hillingdon",zone:"next-day"},HA5:{borough:"Harrow",zone:"next-day"},
+  UB1:{borough:"Ealing",zone:"next-day"},UB2:{borough:"Ealing",zone:"next-day"},UB3:{borough:"Hillingdon",zone:"next-day"},UB4:{borough:"Hillingdon",zone:"next-day"},UB5:{borough:"Ealing",zone:"next-day"},
+  TW1:{borough:"Richmond upon Thames",zone:"next-day"},TW2:{borough:"Hounslow",zone:"next-day"},TW3:{borough:"Hounslow",zone:"next-day"},TW4:{borough:"Hounslow",zone:"next-day"},TW7:{borough:"Hounslow",zone:"next-day"},TW8:{borough:"Hounslow",zone:"next-day"},TW9:{borough:"Richmond upon Thames",zone:"next-day"},TW10:{borough:"Richmond upon Thames",zone:"next-day"},TW11:{borough:"Richmond upon Thames",zone:"next-day"},TW12:{borough:"Richmond upon Thames",zone:"next-day"},
+  KT1:{borough:"Kingston upon Thames",zone:"next-day"},KT2:{borough:"Kingston upon Thames",zone:"next-day"},KT3:{borough:"Merton",zone:"next-day"},KT4:{borough:"Sutton",zone:"next-day"},
+  SM1:{borough:"Sutton",zone:"next-day"},SM2:{borough:"Sutton",zone:"next-day"},SM3:{borough:"Sutton",zone:"next-day"},SM4:{borough:"Merton",zone:"next-day"},SM5:{borough:"Sutton",zone:"next-day"},SM6:{borough:"Sutton",zone:"next-day"},
+  CR0:{borough:"Croydon",zone:"next-day"},CR2:{borough:"Croydon",zone:"next-day"},CR4:{borough:"Merton",zone:"next-day"},CR5:{borough:"Croydon",zone:"next-day"},CR7:{borough:"Croydon",zone:"next-day"},CR8:{borough:"Croydon",zone:"next-day"},
+  BR1:{borough:"Bromley",zone:"next-day"},BR2:{borough:"Bromley",zone:"next-day"},BR3:{borough:"Bromley",zone:"next-day"},BR4:{borough:"Bromley",zone:"next-day"},BR5:{borough:"Bromley",zone:"next-day"},BR6:{borough:"Bromley",zone:"next-day"},
+  DA1:{borough:"Bexley",zone:"next-day"},DA5:{borough:"Bexley",zone:"next-day"},DA6:{borough:"Bexley",zone:"next-day"},DA7:{borough:"Bexley",zone:"next-day"},DA8:{borough:"Bexley",zone:"next-day"},DA15:{borough:"Bexley",zone:"next-day"},DA16:{borough:"Bexley",zone:"next-day"},DA17:{borough:"Bexley",zone:"next-day"},DA18:{borough:"Bexley",zone:"next-day"},
+  RM1:{borough:"Havering",zone:"next-day"},RM2:{borough:"Havering",zone:"next-day"},RM3:{borough:"Havering",zone:"next-day"},RM7:{borough:"Havering",zone:"next-day"},RM8:{borough:"Barking & Dagenham",zone:"next-day"},RM9:{borough:"Barking & Dagenham",zone:"next-day"},RM10:{borough:"Barking & Dagenham",zone:"next-day"},RM12:{borough:"Havering",zone:"next-day"},RM13:{borough:"Havering",zone:"next-day"},
+  IG1:{borough:"Redbridge",zone:"next-day"},IG2:{borough:"Redbridge",zone:"next-day"},IG3:{borough:"Redbridge",zone:"next-day"},IG4:{borough:"Redbridge",zone:"next-day"},IG5:{borough:"Redbridge",zone:"next-day"},IG6:{borough:"Redbridge",zone:"next-day"},IG11:{borough:"Barking & Dagenham",zone:"next-day"},
 };
 
 function lookupPostcode(raw: string): { borough: string; zone: "same-day" | "next-day"; covered: boolean } | null {
   const upper = raw.trim().toUpperCase().replace(/\s+/g, "");
-  // Try longest match first (e.g. "SW11" before "SW1")
   for (const len of [4, 3, 2]) {
     const prefix = upper.slice(0, len);
     if (POSTCODE_ZONES[prefix]) return { ...POSTCODE_ZONES[prefix], covered: true };
   }
-  // Generic London area codes not in the table — covered but call to confirm
   if (/^(E|N|NW|W|WC|SW|SE|EC|HA|UB|TW|KT|SM|CR|BR|DA|RM|IG)\d/.test(upper)) {
     return { borough: "Greater London", zone: "next-day", covered: true };
   }
   return null;
 }
 
-function CoverageCanvas({ data, fullscreen }: { data: Record<string, unknown>; fullscreen: boolean }) {
+function CoverageCanvas({ data, onSend }: { data: Record<string, unknown>; onSend: (msg?: string) => void }) {
   const initial = data.postcode as string | undefined;
   const [input, setInput] = useState(initial || "");
   const [result, setResult] = useState<{ borough: string; zone: "same-day" | "next-day"; covered: boolean } | null>(() => {
-    if (data.borough) {
-      return {
-        borough: data.borough as string,
-        zone: (data.zone as "same-day" | "next-day") || "next-day",
-        covered: data.covered as boolean,
-      };
-    }
+    if (data.borough) return { borough: data.borough as string, zone: (data.zone as "same-day" | "next-day") || "next-day", covered: data.covered as boolean };
     if (initial) return lookupPostcode(initial);
     return null;
   });
@@ -1558,126 +1379,115 @@ function CoverageCanvas({ data, fullscreen }: { data: Record<string, unknown>; f
     setResult(found ?? { borough: "", zone: "next-day", covered: false });
   }
 
-  const pad = fullscreen ? "p-6" : "p-4";
-  const textSm = fullscreen ? "text-[14px]" : "text-[12px]";
-  const textMd = fullscreen ? "text-[17px]" : "text-[14px]";
-  const textLg = fullscreen ? "text-[22px]" : "text-[16px]";
-
   return (
-    <div className={`${fullscreen ? "" : "mt-3"} rounded-xl border overflow-hidden`} style={{ borderColor: "var(--line)" }}>
-      {result ? (
-        <div className={pad} style={{ background: result.covered ? "color-mix(in oklab, var(--emerald) 5%, white)" : "color-mix(in oklab, #dc2626 5%, white)" }}>
-          {/* Status row */}
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <div className={`font-bold ${textLg}`} style={{ color: result.covered ? "var(--emerald-deep)" : "#dc2626" }}>
-                {result.covered ? "✓ We cover your area" : "⚠ Outside our area"}
+    <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+      {result && (
+        <div className="px-4 py-3 flex items-start gap-3" style={{ background: result.covered ? "color-mix(in oklab, var(--emerald) 5%, white)" : "rgba(220,38,38,0.04)", borderBottom: "1px solid rgba(15,30,60,0.06)" }}>
+          <div className="h-9 w-9 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: result.covered ? "var(--emerald-deep)" : "#dc2626" }}>
+            {result.covered ? <CheckCircle2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>
+                {result.covered ? `We cover ${result.borough}` : "Outside our zone"}
               </div>
-              {result.borough && (
-                <div className={`mt-0.5 ${textSm}`} style={{ color: "var(--ink-soft)" }}>
-                  {input.trim().toUpperCase() && <span className="font-semibold">{input.trim().toUpperCase()} · </span>}
-                  {result.borough}
-                </div>
+              {result.covered && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: result.zone === "same-day" ? "color-mix(in oklab, var(--emerald) 15%, white)" : "color-mix(in oklab, var(--navy) 8%, white)", color: result.zone === "same-day" ? "var(--emerald-deep)" : "var(--navy)" }}>
+                  {result.zone === "same-day" ? "Same-day" : "Next-day"}
+                </span>
               )}
             </div>
-            {result.covered && (
-              <span
-                className={`flex-shrink-0 rounded-full px-2.5 py-1 font-semibold ${textSm}`}
-                style={{
-                  background: result.zone === "same-day" ? "color-mix(in oklab, var(--emerald) 15%, white)" : "color-mix(in oklab, var(--navy) 10%, white)",
-                  color: result.zone === "same-day" ? "var(--emerald-deep)" : "var(--navy)",
-                }}
-              >
-                {result.zone === "same-day" ? "Same-day" : "Next-day"}
-              </span>
-            )}
-          </div>
-
-          {/* Availability hint */}
-          {result.covered && (
-            <div className={`mb-4 ${textSm}`} style={{ color: "var(--ink-soft)" }}>
-              {result.zone === "same-day"
-                ? "Inner London — same-day slots available Mon–Fri"
-                : "Outer London — next-day slots available"}
+            <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-soft)" }}>
+              {result.covered ? (result.zone === "same-day" ? "Inner London · engineers based nearby" : "Outer London · next-day slots available") : "Call 0203 772 5959 to confirm"}
             </div>
-          )}
-
-          {/* CTA */}
-          {result.covered ? (
-            <a
-              href="tel:02037725959"
-              className={`mb-4 flex items-center justify-center gap-2 rounded-lg font-semibold text-white ${fullscreen ? "py-3.5 text-[15px]" : "py-2.5 text-[13px]"}`}
-              style={{ background: "var(--emerald-deep)" }}
-            >
-              <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Book now — 0203 772 5959
-            </a>
-          ) : (
-            <a
-              href="tel:02037725959"
-              className={`mb-4 flex items-center justify-center gap-2 rounded-lg font-semibold text-white ${fullscreen ? "py-3.5 text-[15px]" : "py-2.5 text-[13px]"}`}
-              style={{ background: "var(--navy)" }}
-            >
-              <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Call to confirm — 0203 772 5959
-            </a>
-          )}
+          </div>
         </div>
-      ) : null}
-
-      {/* Postcode input — always visible */}
-      <div className={`${result ? "border-t" : ""} ${pad}`} style={{ borderColor: "var(--line)", background: "white" }}>
-        {!result && (
-          <div className={`font-semibold mb-2 ${textMd}`} style={{ color: "var(--navy)" }}>Check your postcode</div>
-        )}
-        <div className={`${result ? "" : `${textSm} mb-1`}`} style={{ color: "var(--ink-soft)" }}>
-          {result ? <span className={textSm}>Check another postcode</span> : "Enter your postcode for instant confirmation"}
-        </div>
-        <div className="flex gap-2 mt-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === "Enter" && check()}
-            placeholder="e.g. SW11 2AB"
-            className={`flex-1 rounded-lg border px-3 outline-none focus:border-[var(--navy)] tracking-wide ${fullscreen ? "py-2.5 text-[14px]" : "py-2 text-[13px]"}`}
-            style={{ borderColor: "var(--line)" }}
-          />
-          <button
-            onClick={check}
-            disabled={!input.trim()}
-            className={`rounded-lg font-semibold text-white disabled:opacity-40 ${fullscreen ? "px-5 text-[14px]" : "px-3 text-[13px]"}`}
-            style={{ background: "var(--navy)" }}
-          >
-            Check
-          </button>
+      )}
+      {result?.covered && (
+        <button onClick={() => onSend("I'd like to book")} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)", borderBottom: "1px solid rgba(15,30,60,0.06)" }}>
+          Book now →
+        </button>
+      )}
+      <div className="px-4 py-3 bg-white">
+        {!result && <div className="text-[12px] mb-2 font-medium" style={{ color: "var(--ink)" }}>Check your postcode</div>}
+        {result && <div className="text-[11px] mb-2" style={{ color: "var(--ink-soft)" }}>Check another postcode</div>}
+        <div className="flex gap-2">
+          <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && check()} placeholder="e.g. SW11 2AB"
+            className="flex-1 rounded-xl border px-3 py-2 text-[13px] outline-none focus:border-[var(--navy)] tracking-wide" style={{ borderColor: "rgba(15,30,60,0.12)" }} />
+          <button onClick={check} disabled={!input.trim()} className="rounded-xl px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-30" style={{ background: "var(--navy)" }}>Check</button>
         </div>
       </div>
     </div>
   );
 }
 
-function ChatCanvas({ canvas, fullscreen = false }: { canvas: { type: string; data: Record<string, unknown> }; fullscreen?: boolean }) {
+type CanvasProps = { canvas: { type: string; data: Record<string, unknown> }; onSend: (msg?: string) => void };
+
+function ChatCanvas({ canvas, onSend }: CanvasProps) {
   if (canvas.type === "price-calculator") {
     const services = (canvas.data.services as Array<{ name: string; price: string }>) || [];
+    const total = services.reduce((a, s) => a + (parseInt(String(s.price).replace(/[^0-9]/g, ""), 10) || 0), 0);
     return (
-      <div className={fullscreen ? "rounded-2xl border overflow-hidden" : "mt-3 rounded-xl border"} style={{ borderColor: "var(--line)" }}>
-        <div className={fullscreen ? "px-5 pt-5 pb-4" : "p-3"} style={{ background: "var(--navy-faint)" }}>
-          <div className={`font-semibold uppercase tracking-wider mb-3 ${fullscreen ? "text-[13px]" : "text-[11px]"}`} style={{ color: "var(--navy)" }}>Price estimate</div>
-          {services.map((s: { name: string; price: string }) => (
-            <div key={s.name} className={`flex justify-between py-2 border-b last:border-b-0 ${fullscreen ? "text-[15px]" : "text-[13px]"}`} style={{ borderColor: "color-mix(in oklab, var(--navy) 10%, white)" }}>
-              <span>{s.name}</span>
-              <span className="font-semibold">{s.price}</span>
+      <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid color-mix(in oklab, var(--emerald) 18%, white)" }}>
+        <div className="px-4 py-3" style={{ background: "color-mix(in oklab, var(--emerald) 6%, white)" }}>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--emerald-deep)" }}>Live quote</div>
+          {services.map((s) => (
+            <div key={s.name} className="flex justify-between text-[13px] py-1.5 border-b last:border-0" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
+              <span style={{ color: "var(--ink)" }}>{s.name}</span>
+              <span className="font-semibold" style={{ color: "var(--ink)" }}>{s.price}</span>
             </div>
           ))}
+          <div className="flex justify-between text-[14px] pt-2 mt-1 font-bold">
+            <span>Total</span><span style={{ color: "var(--emerald-deep)" }}>£{total}</span>
+          </div>
         </div>
-        <a
-          href="tel:02037725959"
-          className={`flex items-center justify-center gap-2 font-semibold text-white ${fullscreen ? "py-4 text-[15px]" : "py-2.5 text-[13px]"}`}
-          style={{ background: "var(--navy)" }}
-        >
-          <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Book: 0203 772 5959
-        </a>
+        <button onClick={() => onSend("I'd like to book this")} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>
+          Book at this price →
+        </button>
       </div>
     );
   }
+
+  if (canvas.type === "appliance-counter") {
+    return <ApplianceCounter basePrice={(canvas.data.basePrice as number) ?? 40} perItem={(canvas.data.perItem as number) ?? 10} onConfirm={(p, total) => onSend(`Book Gas Safety, ${p} appliances, total £${total}`)} />;
+  }
+
+  if (canvas.type === "booking-slots") {
+    return <BookingSlots service={(canvas.data.service as string) ?? "Inspection"} onConfirm={(slot) => onSend(`Booked: ${slot}`)} />;
+  }
+
+  if (canvas.type === "coverage-result") {
+    return <CoverageCanvas data={canvas.data} onSend={onSend} />;
+  }
+
+  if (canvas.type === "certificate-preview") {
+    const c = canvas.data as { type: string; address: string; engineer: string; gasSafeNo: string; issued: string; expires: string; status: string };
+    const pass = c.status?.toLowerCase().includes("pass");
+    return (
+      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.1)", boxShadow: "0 8px 24px -12px rgba(15,30,60,0.15)" }}>
+        <div className="px-4 py-3 flex items-center justify-between" style={{ background: "var(--navy-deep)", color: "white" }}>
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.15em] opacity-60">Certificate</div>
+            <div className="text-[13px] font-semibold">{c.type}</div>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: pass ? "var(--emerald)" : "#ef4444", color: pass ? "#052e16" : "white" }}>{c.status}</span>
+        </div>
+        <div className="p-4 space-y-2 text-[12px]">
+          <Row label="Property" value={c.address} />
+          <Row label="Engineer" value={c.engineer} />
+          <Row label="Gas Safe №" value={c.gasSafeNo} />
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Row label="Issued" value={c.issued} />
+            <Row label="Expires" value={c.expires} />
+          </div>
+        </div>
+        <button className="w-full py-2.5 text-[13px] font-semibold border-t" style={{ borderColor: "rgba(15,30,60,0.08)", color: "var(--emerald-deep)" }}>
+          ↓ Download PDF
+        </button>
+      </div>
+    );
+  }
+
   if (canvas.type === "renewal-timeline") {
     const { cert, lastDone, dueDate, validity } = canvas.data as { cert: string; lastDone: string; dueDate: string; validity: string };
     const issued = new Date(lastDone);
@@ -1689,45 +1499,202 @@ function ChatCanvas({ canvas, fullscreen = false }: { canvas: { type: string; da
     const daysLeft = Math.round((due.getTime() - today.getTime()) / 86400000);
     const overdue = daysLeft < 0;
     const urgent = !overdue && daysLeft <= 30;
-    const soon = !overdue && !urgent && daysLeft <= 60;
-    const accentColor = overdue ? "#dc2626" : urgent ? "#ea580c" : soon ? "#ca8a04" : "var(--emerald)";
-    const badgeText = overdue ? `${Math.abs(daysLeft)} days overdue` : daysLeft === 0 ? "Due today" : `${daysLeft} days until renewal`;
+    const accentColor = overdue ? "#dc2626" : urgent ? "#ea580c" : "var(--emerald-deep)";
+    const badgeText = overdue ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`;
     return (
-      <div className={`rounded-xl border overflow-hidden ${fullscreen ? "" : "mt-3"}`} style={{ borderColor: "var(--line)" }}>
-        <div className={fullscreen ? "px-5 pt-6 pb-4" : "px-3 pt-3 pb-1"} style={{ background: "var(--navy-faint)" }}>
-          <div className={`flex items-center justify-between ${fullscreen ? "mb-5" : "mb-2"}`}>
-            <span className={`font-semibold uppercase tracking-wider ${fullscreen ? "text-[13px]" : "text-[11px]"}`} style={{ color: "var(--navy)" }}>{cert} renewal</span>
-            <span className={`font-bold px-2.5 py-1 rounded-full text-white ${fullscreen ? "text-[13px]" : "text-[11px]"}`} style={{ background: accentColor }}>{badgeText}</span>
+      <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+        <div className="px-4 pt-3 pb-3 bg-white">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[12px] font-semibold" style={{ color: "var(--ink)" }}>{cert} · valid {validity}</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: accentColor }}>{badgeText}</span>
           </div>
-          <div className={`relative rounded-full mb-2 ${fullscreen ? "h-3" : "h-2"}`} style={{ background: "color-mix(in oklab, var(--navy) 12%, white)" }}>
-            <div className={`absolute left-0 top-0 rounded-full transition-all ${fullscreen ? "h-3" : "h-2"}`} style={{ width: `${progressPct}%`, background: accentColor }} />
+          <div className="relative h-1.5 rounded-full" style={{ background: "rgba(15,30,60,0.08)" }}>
+            <div className="absolute left-0 top-0 h-1.5 rounded-full" style={{ width: `${progressPct}%`, background: accentColor }} />
             {progressPct > 0 && progressPct < 100 && (
-              <div
-                className={`absolute top-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow ${fullscreen ? "w-4 h-4" : "w-3 h-3"}`}
-                style={{ left: `calc(${progressPct}% - ${fullscreen ? 8 : 6}px)`, background: accentColor }}
-              />
+              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow" style={{ left: `calc(${progressPct}% - 6px)`, background: accentColor }} />
             )}
           </div>
-          <div className={`flex justify-between mb-4 ${fullscreen ? "text-[12px]" : "text-[10px]"}`} style={{ color: "var(--ink-soft)" }}>
-            <span>{lastDone}</span>
-            <span className="font-semibold" style={{ color: accentColor }}>{dueDate}</span>
+          <div className="flex justify-between text-[10px] mt-1.5" style={{ color: "var(--ink-soft)" }}>
+            <span>Issued {lastDone}</span><span>Due {dueDate}</span>
           </div>
-          <div className={`mb-3 ${fullscreen ? "text-[13px]" : "text-[11px]"}`} style={{ color: "var(--ink-soft)" }}>Valid for {validity} · Gas Safe reg 552272</div>
         </div>
-        <a
-          href="tel:02037725959"
-          className={`flex items-center justify-center gap-2 font-semibold text-white ${fullscreen ? "py-4 text-[15px]" : "py-2.5 text-[13px]"}`}
-          style={{ background: accentColor }}
-        >
-          <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Book renewal now — 0203 772 5959
-        </a>
+        <button onClick={() => onSend(`Book ${cert} renewal`)} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: accentColor }}>
+          Book renewal →
+        </button>
       </div>
     );
   }
-  if (canvas.type === "coverage-result") {
-    return <CoverageCanvas data={canvas.data} fullscreen={fullscreen} />;
+
+  if (canvas.type === "eicr-codes") {
+    const code = ((canvas.data.code as string) ?? "C2").toUpperCase();
+    const map: Record<string, { color: string; label: string; desc: string }> = {
+      C1: { color: "#dc2626", label: "Danger present", desc: "Immediate risk to people. Engineer must make safe right away." },
+      C2: { color: "#ea580c", label: "Potentially dangerous", desc: "Urgent remedial work required. Certificate marked unsatisfactory." },
+      C3: { color: "#16a34a", label: "Improvement recommended", desc: "Not a fail. Improvement suggested but installation is still safe." },
+      FI: { color: "#0ea5e9", label: "Further investigation", desc: "Engineer needs to investigate further to determine if remedial work is required." },
+    };
+    const c = map[code] ?? map.C2;
+    return (
+      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-[16px]" style={{ background: c.color }}>{code}</div>
+            <div>
+              <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{c.label}</div>
+              <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>EICR observation code</div>
+            </div>
+          </div>
+          <p className="text-[12px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{c.desc}</p>
+          <div className="flex gap-1 mt-3">
+            {["C1", "C2", "C3", "FI"].map((k) => (
+              <div key={k} className="flex-1 h-1.5 rounded-full" style={{ background: k === code ? map[k].color : "rgba(15,30,60,0.08)" }} />
+            ))}
+          </div>
+        </div>
+        {code !== "C3" && (
+          <button onClick={() => onSend("Get a remedial quote")} className="w-full py-2.5 text-[13px] font-semibold text-white border-t" style={{ background: c.color, borderColor: "rgba(15,30,60,0.08)" }}>
+            Get remedial quote →
+          </button>
+        )}
+      </div>
+    );
   }
+
+  if (canvas.type === "portfolio-table") {
+    const props = (canvas.data.properties as Array<{ address: string; cert: string; status: string; expires: string }>) ?? [];
+    const due = props.filter((p) => p.status === "due" || p.status === "expired").length;
+    return (
+      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+        <div className="px-4 py-2.5 flex items-center justify-between border-b" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
+          <span className="text-[12px] font-semibold" style={{ color: "var(--ink)" }}>{props.length} properties</span>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(234,88,12,0.1)", color: "#ea580c" }}>{due} need action</span>
+        </div>
+        <div className="divide-y" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
+          {props.map((p, i) => {
+            const tone = p.status === "valid" ? { bg: "color-mix(in oklab, var(--emerald) 12%, white)", fg: "var(--emerald-deep)", label: "Valid" } : p.status === "due" ? { bg: "rgba(234,88,12,0.12)", fg: "#ea580c", label: "Due soon" } : { bg: "rgba(220,38,38,0.12)", fg: "#dc2626", label: "Expired" };
+            return (
+              <div key={i} className="px-4 py-2.5 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[12px] font-medium truncate" style={{ color: "var(--ink)" }}>{p.address}</div>
+                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>{p.cert} · {p.expires}</div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: tone.bg, color: tone.fg }}>{tone.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        {due > 0 && (
+          <button onClick={() => onSend(`Book all ${due} due certificates`)} className="w-full py-2.5 text-[13px] font-semibold text-white border-t" style={{ background: "var(--emerald-deep)", borderColor: "rgba(15,30,60,0.06)" }}>
+            Book all {due} due →
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return null;
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>{label}</div>
+      <div className="text-[12px] font-medium" style={{ color: "var(--ink)" }}>{value}</div>
+    </div>
+  );
+}
+
+function ApplianceCounter({ basePrice, perItem, onConfirm }: { basePrice: number; perItem: number; onConfirm: (count: number, total: number) => void }) {
+  const [counts, setCounts] = useState<Record<string, number>>({ Boiler: 1, Hob: 0, Oven: 0, "Gas fire": 0 });
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const price = basePrice + Math.max(0, total - 1) * perItem;
+  return (
+    <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+      <div className="p-4 space-y-2">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: "var(--emerald-deep)" }}>Appliance counter</div>
+        {Object.keys(counts).map((k) => (
+          <div key={k} className="flex items-center justify-between">
+            <span className="text-[13px]" style={{ color: "var(--ink)" }}>{k}</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setCounts((c) => ({ ...c, [k]: Math.max(0, c[k] - 1) }))} className="h-6 w-6 rounded-full text-[14px] font-bold" style={{ background: "rgba(15,30,60,0.06)", color: "var(--ink)" }}>−</button>
+              <span className="text-[13px] font-semibold w-4 text-center">{counts[k]}</span>
+              <button onClick={() => setCounts((c) => ({ ...c, [k]: c[k] + 1 }))} className="h-6 w-6 rounded-full text-[14px] font-bold text-white" style={{ background: "var(--emerald-deep)" }}>+</button>
+            </div>
+          </div>
+        ))}
+        <div className="flex justify-between items-baseline pt-2 mt-1 border-t" style={{ borderColor: "rgba(15,30,60,0.08)" }}>
+          <span className="text-[12px]" style={{ color: "var(--ink-soft)" }}>{total} appliance{total === 1 ? "" : "s"}</span>
+          <span className="text-[18px] font-bold" style={{ color: "var(--emerald-deep)" }}>£{price}</span>
+        </div>
+      </div>
+      <button onClick={() => onConfirm(total, price)} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>
+        Book at £{price} →
+      </button>
+    </div>
+  );
+}
+
+function BookingSlots({ service, onConfirm }: { service: string; onConfirm: (slot: string) => void }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const days = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i + 1);
+    return { key: d.toISOString().slice(0, 10), label: d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) };
+  });
+  const windows = ["8–11am", "11–2pm", "2–5pm"];
+  if (picked && picked === "_confirmed") {
+    return (
+      <div className="mt-3 rounded-2xl p-4 flex items-start gap-3" style={{ border: "1px solid color-mix(in oklab, var(--emerald) 25%, white)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
+        <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: "var(--emerald-deep)" }} />
+        <div>
+          <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>Booked — ref LC{Math.floor(Math.random() * 90000 + 10000)}</div>
+          <div className="text-[12px]" style={{ color: "var(--ink-soft)" }}>Confirmation sent to your email.</div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+      <div className="p-4">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: "var(--emerald-deep)" }}>{service} · pick a slot</div>
+        <div className="space-y-2">
+          {days.map((d) => (
+            <div key={d.key}>
+              <div className="text-[11px] font-medium mb-1" style={{ color: "var(--ink-soft)" }}>{d.label}</div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {windows.map((w) => {
+                  const id = `${d.key}|${w}`;
+                  const active = picked === id;
+                  return (
+                    <button
+                      key={w}
+                      onClick={() => setPicked(id)}
+                      className="rounded-lg py-1.5 text-[11px] font-medium transition-colors"
+                      style={{
+                        background: active ? "var(--emerald-deep)" : "color-mix(in oklab, var(--navy) 4%, white)",
+                        color: active ? "white" : "var(--ink)",
+                        border: `1px solid ${active ? "var(--emerald-deep)" : "rgba(15,30,60,0.08)"}`,
+                      }}
+                    >
+                      {w}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button
+        disabled={!picked}
+        onClick={() => { const slot = picked!; setPicked("_confirmed"); onConfirm(slot.replace("|", " · ")); }}
+        className="w-full py-2.5 text-[13px] font-semibold text-white disabled:opacity-40"
+        style={{ background: "var(--emerald-deep)" }}
+      >
+        Confirm booking →
+      </button>
+    </div>
+  );
 }
 
 function AccredBadge({ logo, name, sub }: { logo: string; name: string; sub: string }) {
