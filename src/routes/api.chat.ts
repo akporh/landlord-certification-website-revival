@@ -26,12 +26,15 @@ DO NOT make up services not listed. Respond as JSON with this shape:
 }
 
 Canvas types:
-- quote: { services: ["CP12"|"EICR"|"EPC"|"PAT"], estimatedPrice: number, notes: string }
-- coverage: { postcode: string, status: "covered"|"fringe"|"outside", message: string }
-- service_detail: { serviceCode: string }
-- contact: {}
+- "price-calculator": { "services": [{ "name": "...", "price": "..." }] }
+  Use when the user asks about pricing. List each service with its price as a string (e.g. "from £40").
+- "coverage-result": { "covered": true/false }
+  Use when the user asks if you cover their area or postcode. Set covered: true for any London borough or M25 area, false otherwise.
+- "renewal-timeline": { "cert": "Gas Safety", "lastDone": "May 2023", "dueDate": "May 2024", "validity": "1 year" }
+  Use when the user asks when their certificate is due or mentions a past inspection date.
+  cert: the certificate type. lastDone: when they last had it done. dueDate: add validity period to lastDone. validity: "1 year", "5 years", or "10 years".
 
-After 3 exchanges, set handoff: true to transfer to a human agent. Be warm but concise.`;
+Set handoff: true if user is frustrated, repeats unanswered question, or explicitly asks for a human. Be warm but concise.`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {
