@@ -81,7 +81,8 @@ export const Route = createFileRoute("/api/chat")({
           const text = data.content?.[0]?.text ?? "";
           let parsed: { content: string; canvas: Record<string, unknown> | null; handoff: boolean };
           try {
-            parsed = JSON.parse(text);
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text);
           } catch {
             parsed = { content: text, canvas: null, handoff: false };
           }
