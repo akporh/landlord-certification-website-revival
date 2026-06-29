@@ -22,6 +22,8 @@ import {
   X,
   Send,
   MapPin,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
@@ -339,6 +341,7 @@ function DirectionA() {
   const [chatLoading, setChatLoading] = useState(false);
   const [handoffActive, setHandoffActive] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [activeCanvas, setActiveCanvas] = useState<{ type: string; data: Record<string, unknown> } | null>(null);
 
   function resetChat() {
     setMessages([{ role: "ai", content: "Hi — I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
@@ -346,6 +349,7 @@ function DirectionA() {
     setChatLoading(false);
     setHandoffActive(false);
     setConfirmReset(false);
+    setActiveCanvas(null);
   }
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -1134,30 +1138,40 @@ function DirectionA() {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
-              <div className="flex items-center gap-3">
-                <div className="relative h-11 w-11 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--emerald) 18%, white), color-mix(in oklab, var(--navy) 8%, white))" }}>
-                  <img src={lcBot} alt="LC bot" className="h-12 w-12 object-contain -mb-1" />
-                </div>
-                <div>
-                  <div className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>LC Assistant</div>
-                  <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
-                    <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
-                    Online · replies instantly
+              {activeCanvas ? (
+                <button
+                  onClick={() => setActiveCanvas(null)}
+                  className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-black/5 transition-colors"
+                  style={{ color: "var(--ink)" }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="text-[14px] font-medium">Back to chat</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="relative h-11 w-11 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, color-mix(in oklab, var(--emerald) 18%, white), color-mix(in oklab, var(--navy) 8%, white))" }}>
+                    <img src={lcBot} alt="LC bot" className="h-12 w-12 object-contain -mb-1" />
+                  </div>
+                  <div>
+                    <div className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>LC Assistant</div>
+                    <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                      <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
+                      Online · replies instantly
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               <div className="flex items-center gap-1">
-                {messages.length > 1 && !confirmReset && (
+                {messages.length > 1 && !confirmReset && !activeCanvas && (
                   <button
                     onClick={() => setConfirmReset(true)}
                     className="rounded-full px-2.5 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors"
                     style={{ color: "var(--ink-soft)" }}
-                    title="Start a new chat"
                   >
                     New chat
                   </button>
                 )}
-                <button onClick={() => { setChatOpen(false); setConfirmReset(false); }} className="rounded-full p-1.5 hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
+                <button onClick={() => { setChatOpen(false); setConfirmReset(false); setActiveCanvas(null); }} className="rounded-full p-1.5 hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -1178,6 +1192,13 @@ function DirectionA() {
               </div>
             )}
 
+            {/* Fullscreen canvas view or messages */}
+            {activeCanvas ? (
+              <div className="flex-1 overflow-y-auto px-4 py-5" style={{ background: "white" }}>
+                <ChatCanvas canvas={activeCanvas} onSend={(msg) => { setActiveCanvas(null); sendMessage(msg); }} />
+              </div>
+            ) : (
+              <>
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4" style={{ background: "white" }}>
               {messages.map((msg, i) => (
@@ -1196,7 +1217,15 @@ function DirectionA() {
                       <img src={lcBot} alt="" className="h-8 w-8 object-contain flex-shrink-0 rounded-full" style={{ background: "color-mix(in oklab, var(--emerald) 10%, white)" }} />
                       <div className="min-w-0">
                         <div className="text-[14px] leading-relaxed whitespace-pre-line pt-1" style={{ color: "var(--ink)" }}>{msg.content}</div>
-                        {msg.canvas && <ChatCanvas canvas={msg.canvas} onSend={sendMessage} />}
+                        {msg.canvas && (
+                          <button
+                            onClick={() => setActiveCanvas(msg.canvas!)}
+                            className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all hover:scale-[1.02]"
+                            style={{ background: "color-mix(in oklab, var(--emerald) 8%, white)", border: "1px solid color-mix(in oklab, var(--emerald) 20%, white)", color: "var(--emerald-deep)" }}
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" /> View details
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1269,6 +1298,8 @@ function DirectionA() {
                 Powered by on-ai-rails
               </div>
             </div>
+              </>
+            )}
           </div>
         )}
 
