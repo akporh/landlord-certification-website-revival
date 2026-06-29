@@ -338,6 +338,15 @@ function DirectionA() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [handoffActive, setHandoffActive] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  function resetChat() {
+    setMessages([{ role: "ai", content: "Hi — I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
+    setChatInput("");
+    setChatLoading(false);
+    setHandoffActive(false);
+    setConfirmReset(false);
+  }
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1137,10 +1146,37 @@ function DirectionA() {
                   </div>
                 </div>
               </div>
-              <button onClick={() => setChatOpen(false)} className="rounded-full p-1.5 hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                {messages.length > 1 && !confirmReset && (
+                  <button
+                    onClick={() => setConfirmReset(true)}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors"
+                    style={{ color: "var(--ink-soft)" }}
+                    title="Start a new chat"
+                  >
+                    New chat
+                  </button>
+                )}
+                <button onClick={() => { setChatOpen(false); setConfirmReset(false); }} className="rounded-full p-1.5 hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
+
+            {/* New chat confirmation strip */}
+            {confirmReset && (
+              <div className="flex items-center justify-between gap-3 px-4 py-3 flex-shrink-0" style={{ background: "color-mix(in oklab, var(--navy) 4%, white)", borderBottom: "1px solid rgba(15,30,60,0.08)" }}>
+                <span className="text-[12px]" style={{ color: "var(--ink)" }}>Start a new chat? This conversation will be closed.</span>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => setConfirmReset(false)} className="rounded-full px-2.5 py-1 text-[11px] font-medium hover:bg-black/5 transition-colors" style={{ color: "var(--ink-soft)" }}>
+                    Cancel
+                  </button>
+                  <button onClick={resetChat} className="rounded-full px-2.5 py-1 text-[11px] font-semibold text-white transition-colors" style={{ background: "var(--navy)" }}>
+                    Start over
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4" style={{ background: "white" }}>
