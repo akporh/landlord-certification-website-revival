@@ -335,7 +335,7 @@ function DirectionA() {
   const [showTooltip, setShowTooltip] = useState(true);
   const [pulseActive, setPulseActive] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "ai", content: "Hi — I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" },
+    { role: "ai", content: "Hi, I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -344,7 +344,7 @@ function DirectionA() {
   const [activeCanvas, setActiveCanvas] = useState<{ type: string; data: Record<string, unknown> } | null>(null);
 
   function resetChat() {
-    setMessages([{ role: "ai", content: "Hi — I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
+    setMessages([{ role: "ai", content: "Hi, I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
     setChatInput("");
     setChatLoading(false);
     setHandoffActive(false);
@@ -433,7 +433,7 @@ function DirectionA() {
           <nav className="hidden gap-7 text-sm md:flex" style={{ color: "var(--ink-soft)" }}>
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
             <a href="#commercial" className="hover:text-[var(--navy)]">Commercial</a>
-            <a href="#offers" className="hover:text-[var(--navy)]">Bundles</a>
+            <a href="#offers" className="hover:text-[var(--navy)]">Offers</a>
             <a href="#coverage" className="hover:text-[var(--navy)]">Coverage</a>
             <Link to="/clients" className="hover:text-[var(--navy)]">For Agents</Link>
             <a href="#faq" className="hover:text-[var(--navy)]">FAQ</a>
