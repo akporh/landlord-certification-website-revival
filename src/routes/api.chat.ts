@@ -28,8 +28,12 @@ DO NOT make up services not listed. Respond as JSON with this shape:
 Canvas types:
 - "price-calculator": { "services": [{ "name": "...", "price": "..." }] }
   Use when the user asks about pricing. List each service with its price as a string (e.g. "from £40").
-- "coverage-result": { "covered": true/false }
-  Use when the user asks if you cover their area or postcode. Set covered: true for any London borough or M25 area, false otherwise.
+- "coverage-result": { "covered": true/false, "postcode": "E14", "borough": "Tower Hamlets", "zone": "same-day" }
+  Use when the user asks if you cover their area or postcode.
+  covered: true for any London borough or M25 area, false otherwise.
+  postcode: the postcode district they mentioned (e.g. "E14", "SW11").
+  borough: the London borough for that postcode.
+  zone: "same-day" for inner London (zones 1–2), "next-day" for outer London.
 - "renewal-timeline": { "cert": "Gas Safety", "lastDone": "May 2023", "dueDate": "May 2024", "validity": "1 year" }
   Use when the user asks when their certificate is due or mentions a past inspection date.
   cert: the certificate type. lastDone: when they last had it done. dueDate: add validity period to lastDone. validity: "1 year", "5 years", or "10 years".

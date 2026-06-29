@@ -1335,6 +1335,325 @@ function FixedDealPill() {
   );
 }
 
+const POSTCODE_ZONES: Record<string, { borough: string; zone: "same-day" | "next-day" }> = {
+  // Inner London — same-day
+  E1:   { borough: "Tower Hamlets",        zone: "same-day" },
+  E2:   { borough: "Tower Hamlets",        zone: "same-day" },
+  E3:   { borough: "Tower Hamlets",        zone: "same-day" },
+  E14:  { borough: "Tower Hamlets",        zone: "same-day" },
+  E5:   { borough: "Hackney",              zone: "same-day" },
+  E8:   { borough: "Hackney",              zone: "same-day" },
+  E9:   { borough: "Hackney",              zone: "same-day" },
+  EC1:  { borough: "Islington",            zone: "same-day" },
+  EC2:  { borough: "City of London",       zone: "same-day" },
+  EC3:  { borough: "City of London",       zone: "same-day" },
+  EC4:  { borough: "City of London",       zone: "same-day" },
+  N1:   { borough: "Islington",            zone: "same-day" },
+  N4:   { borough: "Islington",            zone: "same-day" },
+  N5:   { borough: "Islington",            zone: "same-day" },
+  N7:   { borough: "Islington",            zone: "same-day" },
+  N16:  { borough: "Hackney",              zone: "same-day" },
+  N19:  { borough: "Islington",            zone: "same-day" },
+  NW1:  { borough: "Camden",               zone: "same-day" },
+  NW3:  { borough: "Camden",               zone: "same-day" },
+  NW5:  { borough: "Camden",               zone: "same-day" },
+  NW6:  { borough: "Brent",               zone: "same-day" },
+  NW8:  { borough: "Westminster",          zone: "same-day" },
+  W1:   { borough: "Westminster",          zone: "same-day" },
+  W2:   { borough: "Westminster",          zone: "same-day" },
+  W6:   { borough: "Hammersmith & Fulham", zone: "same-day" },
+  W8:   { borough: "Kensington & Chelsea", zone: "same-day" },
+  W10:  { borough: "Kensington & Chelsea", zone: "same-day" },
+  W11:  { borough: "Kensington & Chelsea", zone: "same-day" },
+  W12:  { borough: "Hammersmith & Fulham", zone: "same-day" },
+  W14:  { borough: "Hammersmith & Fulham", zone: "same-day" },
+  WC1:  { borough: "Camden",               zone: "same-day" },
+  WC2:  { borough: "Westminster",          zone: "same-day" },
+  SW1:  { borough: "Westminster",          zone: "same-day" },
+  SW3:  { borough: "Kensington & Chelsea", zone: "same-day" },
+  SW5:  { borough: "Kensington & Chelsea", zone: "same-day" },
+  SW6:  { borough: "Hammersmith & Fulham", zone: "same-day" },
+  SW7:  { borough: "Kensington & Chelsea", zone: "same-day" },
+  SW8:  { borough: "Lambeth",              zone: "same-day" },
+  SW9:  { borough: "Lambeth",              zone: "same-day" },
+  SW10: { borough: "Kensington & Chelsea", zone: "same-day" },
+  SW11: { borough: "Wandsworth",           zone: "same-day" },
+  SW12: { borough: "Wandsworth",           zone: "same-day" },
+  SW15: { borough: "Wandsworth",           zone: "same-day" },
+  SW17: { borough: "Wandsworth",           zone: "same-day" },
+  SW18: { borough: "Wandsworth",           zone: "same-day" },
+  SE1:  { borough: "Southwark",            zone: "same-day" },
+  SE5:  { borough: "Southwark",            zone: "same-day" },
+  SE8:  { borough: "Lewisham",             zone: "same-day" },
+  SE10: { borough: "Greenwich",            zone: "same-day" },
+  SE11: { borough: "Lambeth",              zone: "same-day" },
+  SE15: { borough: "Southwark",            zone: "same-day" },
+  SE16: { borough: "Southwark",            zone: "same-day" },
+  SE17: { borough: "Southwark",            zone: "same-day" },
+  SE24: { borough: "Lambeth",              zone: "same-day" },
+  // Outer London — next-day
+  E4:   { borough: "Waltham Forest",       zone: "next-day" },
+  E6:   { borough: "Newham",              zone: "next-day" },
+  E7:   { borough: "Newham",              zone: "next-day" },
+  E10:  { borough: "Waltham Forest",       zone: "next-day" },
+  E11:  { borough: "Waltham Forest",       zone: "next-day" },
+  E12:  { borough: "Newham",              zone: "next-day" },
+  E13:  { borough: "Newham",              zone: "next-day" },
+  E15:  { borough: "Newham",              zone: "next-day" },
+  E16:  { borough: "Newham",              zone: "next-day" },
+  E17:  { borough: "Waltham Forest",       zone: "next-day" },
+  E18:  { borough: "Redbridge",            zone: "next-day" },
+  N2:   { borough: "Barnet",              zone: "next-day" },
+  N3:   { borough: "Barnet",              zone: "next-day" },
+  N6:   { borough: "Haringey",             zone: "next-day" },
+  N8:   { borough: "Haringey",             zone: "next-day" },
+  N9:   { borough: "Enfield",              zone: "next-day" },
+  N10:  { borough: "Haringey",             zone: "next-day" },
+  N11:  { borough: "Enfield",              zone: "next-day" },
+  N12:  { borough: "Barnet",              zone: "next-day" },
+  N13:  { borough: "Enfield",              zone: "next-day" },
+  N14:  { borough: "Enfield",              zone: "next-day" },
+  N15:  { borough: "Haringey",             zone: "next-day" },
+  N17:  { borough: "Haringey",             zone: "next-day" },
+  N18:  { borough: "Enfield",              zone: "next-day" },
+  N20:  { borough: "Barnet",              zone: "next-day" },
+  N21:  { borough: "Enfield",              zone: "next-day" },
+  N22:  { borough: "Haringey",             zone: "next-day" },
+  NW2:  { borough: "Brent",               zone: "next-day" },
+  NW4:  { borough: "Barnet",              zone: "next-day" },
+  NW7:  { borough: "Barnet",              zone: "next-day" },
+  NW9:  { borough: "Brent",               zone: "next-day" },
+  NW10: { borough: "Brent",               zone: "next-day" },
+  NW11: { borough: "Barnet",              zone: "next-day" },
+  W3:   { borough: "Ealing",              zone: "next-day" },
+  W4:   { borough: "Hounslow",             zone: "next-day" },
+  W5:   { borough: "Ealing",              zone: "next-day" },
+  W7:   { borough: "Ealing",              zone: "next-day" },
+  W13:  { borough: "Ealing",              zone: "next-day" },
+  SW13: { borough: "Richmond upon Thames", zone: "next-day" },
+  SW14: { borough: "Richmond upon Thames", zone: "next-day" },
+  SW16: { borough: "Merton",              zone: "next-day" },
+  SW19: { borough: "Merton",              zone: "next-day" },
+  SW20: { borough: "Merton",              zone: "next-day" },
+  SE2:  { borough: "Bexley",              zone: "next-day" },
+  SE3:  { borough: "Lewisham",             zone: "next-day" },
+  SE4:  { borough: "Lewisham",             zone: "next-day" },
+  SE6:  { borough: "Lewisham",             zone: "next-day" },
+  SE7:  { borough: "Greenwich",            zone: "next-day" },
+  SE9:  { borough: "Greenwich",            zone: "next-day" },
+  SE12: { borough: "Lewisham",             zone: "next-day" },
+  SE13: { borough: "Lewisham",             zone: "next-day" },
+  SE14: { borough: "Lewisham",             zone: "next-day" },
+  SE18: { borough: "Greenwich",            zone: "next-day" },
+  SE19: { borough: "Bromley",              zone: "next-day" },
+  SE20: { borough: "Bromley",              zone: "next-day" },
+  SE23: { borough: "Lewisham",             zone: "next-day" },
+  SE25: { borough: "Croydon",              zone: "next-day" },
+  SE26: { borough: "Bromley",              zone: "next-day" },
+  SE27: { borough: "Lambeth",              zone: "next-day" },
+  HA1:  { borough: "Harrow",              zone: "next-day" },
+  HA2:  { borough: "Harrow",              zone: "next-day" },
+  HA3:  { borough: "Harrow",              zone: "next-day" },
+  HA4:  { borough: "Hillingdon",           zone: "next-day" },
+  HA5:  { borough: "Harrow",              zone: "next-day" },
+  HA6:  { borough: "Hillingdon",           zone: "next-day" },
+  UB1:  { borough: "Ealing",              zone: "next-day" },
+  UB2:  { borough: "Ealing",              zone: "next-day" },
+  UB3:  { borough: "Hillingdon",           zone: "next-day" },
+  UB4:  { borough: "Hillingdon",           zone: "next-day" },
+  UB5:  { borough: "Ealing",              zone: "next-day" },
+  UB6:  { borough: "Ealing",              zone: "next-day" },
+  TW1:  { borough: "Richmond upon Thames", zone: "next-day" },
+  TW2:  { borough: "Hounslow",             zone: "next-day" },
+  TW3:  { borough: "Hounslow",             zone: "next-day" },
+  TW4:  { borough: "Hounslow",             zone: "next-day" },
+  TW5:  { borough: "Hounslow",             zone: "next-day" },
+  TW7:  { borough: "Hounslow",             zone: "next-day" },
+  TW8:  { borough: "Hounslow",             zone: "next-day" },
+  TW9:  { borough: "Richmond upon Thames", zone: "next-day" },
+  TW10: { borough: "Richmond upon Thames", zone: "next-day" },
+  TW11: { borough: "Richmond upon Thames", zone: "next-day" },
+  TW12: { borough: "Richmond upon Thames", zone: "next-day" },
+  TW13: { borough: "Hounslow",             zone: "next-day" },
+  KT1:  { borough: "Kingston upon Thames", zone: "next-day" },
+  KT2:  { borough: "Kingston upon Thames", zone: "next-day" },
+  KT3:  { borough: "Merton",              zone: "next-day" },
+  KT4:  { borough: "Sutton",              zone: "next-day" },
+  SM1:  { borough: "Sutton",              zone: "next-day" },
+  SM2:  { borough: "Sutton",              zone: "next-day" },
+  SM3:  { borough: "Sutton",              zone: "next-day" },
+  SM4:  { borough: "Merton",              zone: "next-day" },
+  SM5:  { borough: "Sutton",              zone: "next-day" },
+  SM6:  { borough: "Sutton",              zone: "next-day" },
+  CR0:  { borough: "Croydon",              zone: "next-day" },
+  CR2:  { borough: "Croydon",              zone: "next-day" },
+  CR4:  { borough: "Merton",              zone: "next-day" },
+  CR5:  { borough: "Croydon",              zone: "next-day" },
+  CR7:  { borough: "Croydon",              zone: "next-day" },
+  CR8:  { borough: "Croydon",              zone: "next-day" },
+  BR1:  { borough: "Bromley",              zone: "next-day" },
+  BR2:  { borough: "Bromley",              zone: "next-day" },
+  BR3:  { borough: "Bromley",              zone: "next-day" },
+  BR4:  { borough: "Bromley",              zone: "next-day" },
+  BR5:  { borough: "Bromley",              zone: "next-day" },
+  BR6:  { borough: "Bromley",              zone: "next-day" },
+  DA1:  { borough: "Bexley",              zone: "next-day" },
+  DA5:  { borough: "Bexley",              zone: "next-day" },
+  DA6:  { borough: "Bexley",              zone: "next-day" },
+  DA7:  { borough: "Bexley",              zone: "next-day" },
+  DA8:  { borough: "Bexley",              zone: "next-day" },
+  DA15: { borough: "Bexley",              zone: "next-day" },
+  DA16: { borough: "Bexley",              zone: "next-day" },
+  DA17: { borough: "Bexley",              zone: "next-day" },
+  DA18: { borough: "Bexley",              zone: "next-day" },
+  RM1:  { borough: "Havering",             zone: "next-day" },
+  RM2:  { borough: "Havering",             zone: "next-day" },
+  RM3:  { borough: "Havering",             zone: "next-day" },
+  RM7:  { borough: "Havering",             zone: "next-day" },
+  RM8:  { borough: "Barking & Dagenham",   zone: "next-day" },
+  RM9:  { borough: "Barking & Dagenham",   zone: "next-day" },
+  RM10: { borough: "Barking & Dagenham",   zone: "next-day" },
+  RM12: { borough: "Havering",             zone: "next-day" },
+  RM13: { borough: "Havering",             zone: "next-day" },
+  IG1:  { borough: "Redbridge",            zone: "next-day" },
+  IG2:  { borough: "Redbridge",            zone: "next-day" },
+  IG3:  { borough: "Redbridge",            zone: "next-day" },
+  IG4:  { borough: "Redbridge",            zone: "next-day" },
+  IG5:  { borough: "Redbridge",            zone: "next-day" },
+  IG6:  { borough: "Redbridge",            zone: "next-day" },
+  IG11: { borough: "Barking & Dagenham",   zone: "next-day" },
+};
+
+function lookupPostcode(raw: string): { borough: string; zone: "same-day" | "next-day"; covered: boolean } | null {
+  const upper = raw.trim().toUpperCase().replace(/\s+/g, "");
+  // Try longest match first (e.g. "SW11" before "SW1")
+  for (const len of [4, 3, 2]) {
+    const prefix = upper.slice(0, len);
+    if (POSTCODE_ZONES[prefix]) return { ...POSTCODE_ZONES[prefix], covered: true };
+  }
+  // Generic London area codes not in the table — covered but call to confirm
+  if (/^(E|N|NW|W|WC|SW|SE|EC|HA|UB|TW|KT|SM|CR|BR|DA|RM|IG)\d/.test(upper)) {
+    return { borough: "Greater London", zone: "next-day", covered: true };
+  }
+  return null;
+}
+
+function CoverageCanvas({ data, fullscreen }: { data: Record<string, unknown>; fullscreen: boolean }) {
+  const initial = data.postcode as string | undefined;
+  const [input, setInput] = useState(initial || "");
+  const [result, setResult] = useState<{ borough: string; zone: "same-day" | "next-day"; covered: boolean } | null>(() => {
+    if (data.borough) {
+      return {
+        borough: data.borough as string,
+        zone: (data.zone as "same-day" | "next-day") || "next-day",
+        covered: data.covered as boolean,
+      };
+    }
+    if (initial) return lookupPostcode(initial);
+    return null;
+  });
+
+  function check() {
+    const found = lookupPostcode(input);
+    setResult(found ?? { borough: "", zone: "next-day", covered: false });
+  }
+
+  const pad = fullscreen ? "p-6" : "p-4";
+  const textSm = fullscreen ? "text-[14px]" : "text-[12px]";
+  const textMd = fullscreen ? "text-[17px]" : "text-[14px]";
+  const textLg = fullscreen ? "text-[22px]" : "text-[16px]";
+
+  return (
+    <div className={`${fullscreen ? "" : "mt-3"} rounded-xl border overflow-hidden`} style={{ borderColor: "var(--line)" }}>
+      {result ? (
+        <div className={pad} style={{ background: result.covered ? "color-mix(in oklab, var(--emerald) 5%, white)" : "color-mix(in oklab, #dc2626 5%, white)" }}>
+          {/* Status row */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <div className={`font-bold ${textLg}`} style={{ color: result.covered ? "var(--emerald-deep)" : "#dc2626" }}>
+                {result.covered ? "✓ We cover your area" : "⚠ Outside our area"}
+              </div>
+              {result.borough && (
+                <div className={`mt-0.5 ${textSm}`} style={{ color: "var(--ink-soft)" }}>
+                  {input.trim().toUpperCase() && <span className="font-semibold">{input.trim().toUpperCase()} · </span>}
+                  {result.borough}
+                </div>
+              )}
+            </div>
+            {result.covered && (
+              <span
+                className={`flex-shrink-0 rounded-full px-2.5 py-1 font-semibold ${textSm}`}
+                style={{
+                  background: result.zone === "same-day" ? "color-mix(in oklab, var(--emerald) 15%, white)" : "color-mix(in oklab, var(--navy) 10%, white)",
+                  color: result.zone === "same-day" ? "var(--emerald-deep)" : "var(--navy)",
+                }}
+              >
+                {result.zone === "same-day" ? "Same-day" : "Next-day"}
+              </span>
+            )}
+          </div>
+
+          {/* Availability hint */}
+          {result.covered && (
+            <div className={`mb-4 ${textSm}`} style={{ color: "var(--ink-soft)" }}>
+              {result.zone === "same-day"
+                ? "Inner London — same-day slots available Mon–Fri"
+                : "Outer London — next-day slots available"}
+            </div>
+          )}
+
+          {/* CTA */}
+          {result.covered ? (
+            <a
+              href="tel:02037725959"
+              className={`mb-4 flex items-center justify-center gap-2 rounded-lg font-semibold text-white ${fullscreen ? "py-3.5 text-[15px]" : "py-2.5 text-[13px]"}`}
+              style={{ background: "var(--emerald-deep)" }}
+            >
+              <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Book now — 0203 772 5959
+            </a>
+          ) : (
+            <a
+              href="tel:02037725959"
+              className={`mb-4 flex items-center justify-center gap-2 rounded-lg font-semibold text-white ${fullscreen ? "py-3.5 text-[15px]" : "py-2.5 text-[13px]"}`}
+              style={{ background: "var(--navy)" }}
+            >
+              <Phone className={fullscreen ? "h-4 w-4" : "h-3.5 w-3.5"} /> Call to confirm — 0203 772 5959
+            </a>
+          )}
+        </div>
+      ) : null}
+
+      {/* Postcode input — always visible */}
+      <div className={`${result ? "border-t" : ""} ${pad}`} style={{ borderColor: "var(--line)", background: "white" }}>
+        {!result && (
+          <div className={`font-semibold mb-2 ${textMd}`} style={{ color: "var(--navy)" }}>Check your postcode</div>
+        )}
+        <div className={`${result ? "" : `${textSm} mb-1`}`} style={{ color: "var(--ink-soft)" }}>
+          {result ? <span className={textSm}>Check another postcode</span> : "Enter your postcode for instant confirmation"}
+        </div>
+        <div className="flex gap-2 mt-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && check()}
+            placeholder="e.g. SW11 2AB"
+            className={`flex-1 rounded-lg border px-3 outline-none focus:border-[var(--navy)] tracking-wide ${fullscreen ? "py-2.5 text-[14px]" : "py-2 text-[13px]"}`}
+            style={{ borderColor: "var(--line)" }}
+          />
+          <button
+            onClick={check}
+            disabled={!input.trim()}
+            className={`rounded-lg font-semibold text-white disabled:opacity-40 ${fullscreen ? "px-5 text-[14px]" : "px-3 text-[13px]"}`}
+            style={{ background: "var(--navy)" }}
+          >
+            Check
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ChatCanvas({ canvas, fullscreen = false }: { canvas: { type: string; data: Record<string, unknown> }; fullscreen?: boolean }) {
   if (canvas.type === "price-calculator") {
     const services = (canvas.data.services as Array<{ name: string; price: string }>) || [];
@@ -1406,12 +1725,7 @@ function ChatCanvas({ canvas, fullscreen = false }: { canvas: { type: string; da
     );
   }
   if (canvas.type === "coverage-result") {
-    const covered = canvas.data.covered as boolean;
-    return (
-      <div className={`rounded-xl border ${fullscreen ? "p-6 text-[15px]" : "mt-3 p-3 text-[13px]"}`} style={{ borderColor: covered ? "color-mix(in oklab, var(--emerald) 30%, white)" : "var(--line)", background: covered ? "color-mix(in oklab, var(--emerald) 6%, white)" : "white" }}>
-        {covered ? "✓ We cover your area — next-day slots available." : "⚠ Please call us to confirm: 0203 772 5959"}
-      </div>
-    );
+    return <CoverageCanvas data={canvas.data} fullscreen={fullscreen} />;
   }
   return null;
 }
