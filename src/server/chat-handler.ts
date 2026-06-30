@@ -1,6 +1,15 @@
 import { defineEventHandler, readBody, setResponseHeader } from "h3";
 
-const SYSTEM = `You are the LC Assistant for Landlord Certificates Ltd, a London property certificate company.
+// London business hours: Mon–Fri 09:00–17:00
+function isLondonBusinessHours(): boolean {
+  const now = new Date();
+  const london = new Date(now.toLocaleString("en-US", { timeZone: "Europe/London" }));
+  const day = london.getDay(); // 0=Sun, 6=Sat
+  const hour = london.getHours();
+  return day >= 1 && day <= 5 && hour >= 9 && hour < 17;
+}
+
+const SYSTEM_BASE = `You are the LC Assistant for Landlord Certificates Ltd, a London property certificate company.
 You help landlords book Gas Safety (CP12), EICR, EPC and PAT certificates, and HMO services (Emergency Lighting, Fire Alarm Testing, Commercial EICR).
 
 Respond briefly and helpfully. For pricing or coverage questions, return structured canvas data.
@@ -34,13 +43,30 @@ Canvas types:
 - "price-calculator": { "services": [{ "name": "...", "price": "..." }] }
 - "coverage-result": { "covered": true/false }
 - "renewal-timeline": { "cert": "Gas Safety", "lastDone": "May 2023", "dueDate": "May 2024", "validity": "1 year" }
-  Use renewal-timeline when the landlord asks when their certificate is due, when it expires, or mentions a past inspection date.
-  cert: the certificate type (Gas Safety, EICR, EPC, PAT).
-  lastDone: when they last had the inspection (month and year, e.g. "May 2023").
-  dueDate: when renewal is due — add the validity period to lastDone (Gas Safety: 1 yr, EICR: 5 yr, EPC: 10 yr, PAT: 1 yr).
-  validity: human-readable validity period (e.g. "1 year", "5 years").
+  Use renewal-timeline when the landlord asks when their certificate is due or mentions a past inspection date.
+- "booking-redirect": { "services": ["CP12", "EICR"] }
+  Use booking-redirect whenever the user expresses any intent to book, schedule, or arrange a visit.
+  services: array of service codes mentioned (CP12, EICR, EPC, PAT). Use [] if none specified.
 
-Set handoff: true if user is frustrated, repeats unanswered question, or explicitly asks for a human.`;
+If the user asks about their own certificates or properties and you have no session context, respond with a certificate-preview canvas using this demo data: address "14 Elspeth Road, Battersea, SW11 1LE", engineer "Darren Walsh", gasSafeNo "552272", issued "15 Jul 2025", expires "14 Jul 2026", status "Pass". Use content like "Here's your most recent certificate." Do not mention that it is demo data.
+
+HUMAN HANDOFF RULES — read carefully:
+
+Trigger phrases that mean the user wants a human:
+  "speak to someone", "talk to a person", "real person", "human agent", "live agent",
+  "connect me", "speak to a human", "talk to a human", "live chat", "agent please",
+  "can I speak to someone", "I want to talk to a person", "get me a human",
+  "speak to a real person", "human support", "customer service"
+
+Set handoff: true (live agent handoff) if:
+  - Current agent status is ONLINE, AND
+  - User uses a trigger phrase above OR is frustrated OR repeats an unanswered question.
+
+Set handoff: "ooh" (out of hours) if:
+  - Current agent status is OFFLINE, AND
+  - User uses a trigger phrase above.
+  - Your content reply should be warm and explain agents are offline, and that they can leave their number for a callback when the team opens.
+  - Do NOT set a canvas for "ooh" — the frontend renders the callback form automatically.`;
 
 export default defineEventHandler(async (event) => {
   setResponseHeader(event, "Content-Type", "application/json");
@@ -56,6 +82,13 @@ export default defineEventHandler(async (event) => {
   } catch {
     return { content: "Invalid request.", canvas: null, handoff: false };
   }
+
+  const businessHours = isLondonBusinessHours();
+  const SYSTEM = SYSTEM_BASE + `\n\nCurrent agent status: ${
+    businessHours
+      ? "ONLINE — agents available, live handoff enabled. Use handoff: true if user asks for human."
+      : "OFFLINE — outside business hours (Mon-Fri 9am-5pm London). Use handoff: \"ooh\" if user asks for human."
+  }`;
 
   const messages = [
     ...(body.history ?? [])

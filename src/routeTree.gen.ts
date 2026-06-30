@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DirectionCRouteImport } from './routes/direction-c'
 import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as BookRouteImport } from './routes/book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 
@@ -22,6 +23,11 @@ const DirectionCRoute = DirectionCRouteImport.update({
 const ClientsRoute = ClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
   '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
   '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/book': typeof BookRoute
   '/clients': typeof ClientsRoute
   '/direction-c': typeof DirectionCRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/clients' | '/direction-c' | '/api/chat'
+  fullPaths: '/' | '/book' | '/clients' | '/direction-c' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/clients' | '/direction-c' | '/api/chat'
-  id: '__root__' | '/' | '/clients' | '/direction-c' | '/api/chat'
+  to: '/' | '/book' | '/clients' | '/direction-c' | '/api/chat'
+  id: '__root__' | '/' | '/book' | '/clients' | '/direction-c' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BookRoute: typeof BookRoute
   ClientsRoute: typeof ClientsRoute
   DirectionCRoute: typeof DirectionCRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -85,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BookRoute: BookRoute,
   ClientsRoute: ClientsRoute,
   DirectionCRoute: DirectionCRoute,
   ApiChatRoute: ApiChatRoute,

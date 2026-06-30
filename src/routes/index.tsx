@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Flame,
   Zap,
@@ -24,6 +24,8 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
+  Home,
+  Building2,
 } from "lucide-react";
 import gasSafeLogo from "@/assets/gas-safe.jpg";
 import napitLogo from "@/assets/napit.jpg";
@@ -173,6 +175,7 @@ const JUNE_DEALS = [
   {
     label: "June Deal \u2014 Ends 30 June",
     name: "Gas Safety + Boiler Service",
+    codes: "CP12,BSV",
     price: 85,
     saving: "Save ~\u00a340 vs. booking separately",
     cards: [
@@ -183,6 +186,7 @@ const JUNE_DEALS = [
   {
     label: "June Deal \u2014 Ends 30 June",
     name: "EICR + PAT Testing",
+    codes: "EICR,PAT",
     sub: "1\u20133 bed \u00b7 up to 20 items",
     price: 99,
     saving: "Save \u00a346 vs. booking separately",
@@ -234,7 +238,7 @@ const USPS = [
   {
     icon: Zap,
     heading: "Fast London availability",
-    body: "Every borough covered. Most bookings confirmed within 15 minutes by SMS.",
+    body: "Every borough covered. Book online in under 60 seconds — confirmed instantly, no phone call needed.",
   },
   {
     icon: Star,
@@ -245,8 +249,8 @@ const USPS = [
 
 const FAQS = [
   {
-    q: "How quickly can an engineer attend?",
-    a: "Most London bookings are confirmed within 15 minutes by SMS. Choose your preferred window at checkout and we'll find the earliest available slot at your property.",
+    q: "How does booking work?",
+    a: "Select your certificates, enter your postcode, and pick a date and time. The whole process takes under 60 seconds — no phone calls, no back-and-forth. You'll get an instant on-screen confirmation with your engineer's details, and a copy emailed to you.",
   },
   {
     q: "What happens if my property fails the inspection?",
@@ -316,6 +320,99 @@ const LONDON_BOROUGHS = [
   "Waltham Forest", "Wandsworth", "Westminster",
 ];
 
+// ── Demo persona ────────────────────────────────────────────────────────────
+
+const DEMO_LANDLORD = {
+  name: "John Williams",
+  properties: [
+    {
+      address: "14 Elspeth Road, Battersea, SW11 1LE",
+      certs: [
+        { type: "Gas Safety (CP12)", cert: "CP12", engineer: "Darren Walsh", gasSafeNo: "552272", issued: "15 Jul 2025", issuedISO: "2025-07-15", expires: "14 Jul 2026", expiresISO: "2026-07-14", status: "Pass", chipStatus: "due" as const },
+        { type: "Electrical (EICR)",  cert: "EICR", engineer: "Marcus Reid",  gasSafeNo: "—",    issued: "3 Mar 2022",  issuedISO: "2022-03-03", expires: "3 Mar 2027",  expiresISO: "2027-03-03", status: "Pass", chipStatus: "valid" as const },
+      ],
+    },
+    {
+      address: "7 Albany Road, Camberwell, SE5 0AL",
+      certs: [
+        { type: "Gas Safety (CP12)", cert: "CP12", engineer: "Darren Walsh", gasSafeNo: "552272", issued: "20 Jun 2024", issuedISO: "2024-06-20", expires: "19 Jun 2025", expiresISO: "2025-06-19", status: "Pass", chipStatus: "expired" as const },
+        { type: "Energy (EPC)",       cert: "EPC",  engineer: "Claire Santos", gasSafeNo: "—",  issued: "10 Jan 2020", issuedISO: "2020-01-10", expires: "10 Jan 2030", expiresISO: "2030-01-10", status: "Pass", chipStatus: "valid" as const },
+      ],
+    },
+  ],
+};
+
+const DEMO_PORTFOLIO = DEMO_LANDLORD.properties.flatMap((p) =>
+  p.certs.map((c) => ({ address: p.address, cert: c.type, status: c.chipStatus, expires: c.expires }))
+);
+
+function buildDemoCanvas(msg: string): { content: string; canvas: { type: string; data: Record<string, unknown> } } | null {
+  const m = msg.toLowerCase();
+  if (/my properties|my portfolio|all my certs|all certificates/.test(m)) {
+    return {
+      content: `Here’s your full portfolio, ${DEMO_LANDLORD.name}. One certificate needs attention.`,
+      canvas: { type: "portfolio-table", data: { properties: DEMO_PORTFOLIO } },
+    };
+  }
+  if (/my certificates?|see my|show my|my gas safety|my eicr|my epc|my pat/.test(m)) {
+    const prop = DEMO_LANDLORD.properties[0];
+    const cert = prop.certs[0];
+    return {
+      content: `Here’s your ${cert.type} for ${prop.address}, ${DEMO_LANDLORD.name}.`,
+      canvas: {
+        type: "certificate-preview",
+        data: { type: cert.type, address: prop.address, engineer: cert.engineer, gasSafeNo: cert.gasSafeNo, issued: cert.issued, expires: cert.expires, status: cert.status },
+      },
+    };
+  }
+  if (/when.*(mine|my|due|expir|renew)|due soon|upcoming renewal/.test(m)) {
+    const cert = DEMO_LANDLORD.properties[0].certs[0];
+    return {
+      content: `Your Battersea Gas Safety is due for renewal on ${cert.expires}. Book now to stay compliant.`,
+      canvas: { type: "renewal-timeline", data: { cert: "Gas Safety", lastDone: cert.issuedISO, dueDate: cert.expiresISO, validity: "1 year" } },
+    };
+  }
+  return null;
+}
+
+type ChatPill = { label: string; message?: string; canvas?: { type: string; data: Record<string, unknown> }; companionMsg?: string; demoCanvas?: { type: string; data: Record<string, unknown> }; demoMsg?: string };
+
+const CHAT_PILLS: ChatPill[] = [
+  {
+    label: "My certificates",
+    demoCanvas: { type: "portfolio-table", data: { properties: DEMO_PORTFOLIO } },
+    demoMsg: `Here are your certificates, ${DEMO_LANDLORD.name}. One needs attention.`,
+    message: "Can I see my certificates?",
+  },
+  {
+    label: "Get a quote",
+    canvas: { type: "appliance-counter", data: { basePrice: 40, perItem: 10 } },
+    companionMsg: "Sure — tell me about your appliances and I’ll give you a fixed price.",
+  },
+  {
+    label: "Check coverage",
+    canvas: { type: "coverage-result", data: {} },
+    companionMsg: "Enter your postcode and I’ll check straight away.",
+  },
+  {
+    label: "Book now",
+    message: "I’d like to book",
+  },
+  {
+    label: "When’s mine due?",
+    demoCanvas: { type: "renewal-timeline", data: { cert: "Gas Safety", lastDone: "2025-07-15", dueDate: "2026-07-14", validity: "1 year" } },
+    demoMsg: `Your Battersea Gas Safety is due 14 Jul 2026, ${DEMO_LANDLORD.name}.`,
+    message: "When is my gas safety certificate due?",
+  },
+  {
+    label: "What’s a C2?",
+    message: "What’s a C2 code on an EICR?",
+  },
+  {
+    label: "👤 Speak to a person",
+    message: "I’d like to speak to a person",
+  },
+];
 
 type ChatMessage = {
   role: "ai" | "user" | "agent";
@@ -328,6 +425,10 @@ function DirectionA() {
   const [selected, setSelected] = useState<string[]>(["CP12", "EICR"]);
   const [expandedService, setExpandedService] = useState<string | null>(null);
   const [postcode, setPostcode] = useState("");
+  const [quoteMode, setQuoteMode] = useState<"entry" | "residential" | "commercial">("entry");
+  const [commCertType, setCommCertType] = useState("");
+  const [commPropType, setCommPropType] = useState("");
+  const [commPostcode, setCommPostcode] = useState("");
   
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [chatOpen, setChatOpen] = useState(false);
@@ -342,16 +443,76 @@ function DirectionA() {
   const [handoffActive, setHandoffActive] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [activeCanvas, setActiveCanvas] = useState<{ type: string; data: Record<string, unknown> } | null>(null);
+  const [demoMode, setDemoMode] = useState(false);
+  const isBusinessHours = useMemo(() => {
+    const now = new Date();
+    const london = new Date(now.toLocaleString("en-US", { timeZone: "Europe/London" }));
+    const day = london.getDay();
+    const hour = london.getHours();
+    return day >= 1 && day <= 5 && hour >= 9 && hour < 17;
+  }, []);
+  const [oohActive, setOohActive] = useState(false);
 
   function resetChat() {
     setMessages([{ role: "ai", content: "Hi, I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
     setChatInput("");
     setChatLoading(false);
     setHandoffActive(false);
+    setOohActive(false);
     setConfirmReset(false);
     setActiveCanvas(null);
   }
+
+  function toggleDemoMode() {
+    const next = !demoMode;
+    setDemoMode(next);
+    setActiveCanvas(null);
+    setHandoffActive(false);
+    setConfirmReset(false);
+    if (next) {
+      setMessages([{
+        role: "ai",
+        content: `Welcome back, ${DEMO_LANDLORD.name}!\n\nYou have 4 certificates across 2 properties. Your Battersea Gas Safety is coming up for renewal in July.\n\nWhat would you like to do?`,
+      }]);
+    } else {
+      setMessages([{ role: "ai", content: "Hi, I can quote prices, check coverage, or show your certificates.\n\nWhat do you need?" }]);
+    }
+    setChatInput("");
+    setChatLoading(false);
+  }
+
+  function handlePill(pill: ChatPill) {
+    if (pill.canvas) {
+      setMessages((m) => [
+        ...m,
+        { role: "user", content: pill.label },
+        { role: "ai", content: pill.companionMsg ?? "Here you go.", canvas: pill.canvas },
+      ]);
+      openCanvas(pill.canvas);
+    } else if (demoMode && pill.demoCanvas) {
+      setMessages((m) => [
+        ...m,
+        { role: "user", content: pill.label },
+        { role: "ai", content: pill.demoMsg ?? `Here you go, ${DEMO_LANDLORD.name}.`, canvas: pill.demoCanvas },
+      ]);
+      openCanvas(pill.demoCanvas);
+    } else {
+      sendMessage(pill.message ?? pill.label);
+    }
+  }
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  function openCanvas(canvas: { type: string; data: Record<string, unknown> }) {
+    if (canvas.type === "booking-redirect") {
+      const services = (canvas.data.services as string[] | undefined) ?? [];
+      const query = services.join(",");
+      navigate({ to: "/book" as "/", search: query ? { s: query } : undefined });
+      setChatOpen(false);
+    } else {
+      setActiveCanvas(canvas);
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => setPulseActive(false), 8000);
@@ -381,14 +542,30 @@ function DirectionA() {
     setMessages((m) => [...m, { role: "user", content: userMsg }]);
     setChatLoading(true);
 
+    if (demoMode) {
+      const demo = buildDemoCanvas(userMsg);
+      if (demo) {
+        setMessages((m) => [...m, { role: "ai", content: demo.content, canvas: demo.canvas }]);
+        openCanvas(demo.canvas);
+        setChatLoading(false);
+        return;
+      }
+    }
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg, history }),
       });
-      const data = await res.json() as { content: string; canvas: { type: string; data: Record<string, unknown> } | null; handoff: boolean };
-      if (data.handoff) {
+      const data = await res.json() as { content: string; canvas: { type: string; data: Record<string, unknown> } | null; handoff: boolean | "ooh" };
+      if (data.handoff === "ooh") {
+        setMessages((m) => [...m, { role: "ai" as const, content: data.content }]);
+        setTimeout(() => {
+          setOohActive(true);
+          setChatLoading(false);
+        }, 600);
+      } else if (data.handoff) {
         setMessages((m) => [...m, { role: "ai", content: "Connecting you now..." }]);
         setTimeout(() => {
           setHandoffActive(true);
@@ -397,6 +574,7 @@ function DirectionA() {
         }, 1500);
       } else {
         setMessages((m) => [...m, { role: "ai" as const, content: data.content, canvas: data.canvas ?? undefined }]);
+        if (data.canvas) openCanvas(data.canvas);
         setChatLoading(false);
       }
     } catch {
@@ -428,7 +606,7 @@ function DirectionA() {
       <header className="sticky top-0 z-40 border-b" style={{ background: "rgba(253,252,248,0.85)", backdropFilter: "blur(12px)", borderColor: "var(--line)" }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
-            <img src={lcLogo} alt="Landlord Certificates" className="h-9 w-auto" />
+            <img src={lcLogo} alt="Landlord Certificates" className="h-14 w-auto" />
           </div>
           <nav className="hidden gap-7 text-sm md:flex" style={{ color: "var(--ink-soft)" }}>
             <a href="#services" className="hover:text-[var(--navy)]">Certificates</a>
@@ -442,9 +620,18 @@ function DirectionA() {
             <a href="tel:02037725959" className="hidden text-sm font-medium md:inline-flex items-center gap-1.5" style={{ color: "var(--ink)" }}>
               <Phone className="h-3.5 w-3.5" /> 0203 772 5959
             </a>
-            <a href="/portal" className="hidden md:inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium" style={{ borderColor: "var(--line)", color: "var(--ink)" }}>
-              <LogIn className="h-3.5 w-3.5" /> Sign in
-            </a>
+            <button
+              onClick={toggleDemoMode}
+              className="hidden md:inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-all"
+              style={{
+                borderColor: demoMode ? "color-mix(in oklab, var(--emerald) 40%, white)" : "var(--line)",
+                background: demoMode ? "color-mix(in oklab, var(--emerald) 10%, white)" : "transparent",
+                color: demoMode ? "var(--emerald-deep)" : "var(--ink)",
+              }}
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              {demoMode ? "J. Williams ✓" : "Sign in"}
+            </button>
             <a href="#quote" className="rounded-md px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>Get quote</a>
           </div>
         </div>
@@ -473,55 +660,207 @@ function DirectionA() {
 
         {/* QUOTE CARD */}
         <div id="quote" className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--line)", boxShadow: "var(--shadow-xl)" }}>
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Instant quote</div>
-          <div className="mt-1 text-lg font-semibold">What do you need?</div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            {SERVICES.map((s) => {
-              const on = selected.includes(s.code);
-              const Icon = s.icon;
-              return (
-                <button
-                  key={s.code}
-                  onClick={() => toggle(s.code)}
-                  className="rounded-lg border p-3 text-left transition-all"
-                  style={{
-                    borderColor: on ? "var(--emerald-deep)" : "var(--line)",
-                    background: on ? "color-mix(in oklab, var(--emerald) 8%, white)" : "white",
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" style={{ color: on ? "var(--emerald-deep)" : "var(--ink-soft)" }} />
-                    <div className="text-[13px] font-semibold">{s.name}</div>
-                  </div>
-                  <div className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>from £{s.price} · {s.turn}</div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-5">
-            <label className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Property postcode</label>
-            <input
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value.toUpperCase())}
-              placeholder="e.g. SW11 4NP"
-              className="mt-1.5 w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-[var(--emerald-deep)]"
-              style={{ borderColor: "var(--line)" }}
-            />
-          </div>
-
-          <div className="mt-5 flex items-end justify-between border-t pt-4" style={{ borderColor: "var(--line)" }}>
-            <div>
-              <div className="text-xs" style={{ color: "var(--ink-soft)" }}>
-                {selected.length} cert{selected.length === 1 ? "" : "s"} selected
+          {/* ── Entry: property type question ── */}
+          {quoteMode === "entry" && (
+            <>
+              {/* Header strip */}
+              <div className="-mx-6 -mt-6 mb-5 px-5 py-3.5 border-b" style={{ borderColor: "var(--line)" }}>
+                <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 mb-2" style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}>
+                  <span className="h-[5px] w-[5px] rounded-full" style={{ background: "var(--emerald-deep)", display: "inline-block" }} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#166534" }}>Instant quote</span>
+                </div>
+                <div className="text-[16px] font-bold" style={{ color: "var(--navy-deep)" }}>What type of property?</div>
               </div>
-              <div className="text-3xl font-bold tracking-tight" style={{ color: "var(--navy-deep)" }}>£{total}</div>
-            </div>
-            <a href="tel:02037725959" className="rounded-lg px-5 py-3 text-sm font-semibold text-white" style={{ background: "var(--navy)" }}>
-              Book engineer →
-            </a>
-          </div>
+              {/* Stacked tiles */}
+              <div className="flex flex-col gap-2 px-1">
+                <button
+                  onClick={() => setQuoteMode("residential")}
+                  className="flex items-center gap-3.5 w-full rounded-xl border px-4 py-3.5 text-left transition-all hover:border-[var(--emerald-deep)]"
+                  style={{ borderColor: "var(--line)", background: "white" }}
+                >
+                  <div className="h-[38px] w-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: "#f0fdf4" }}>
+                    <Home className="h-[18px] w-[18px]" style={{ color: "var(--emerald-deep)" }} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[13.5px] font-bold" style={{ color: "var(--navy-deep)" }}>Residential</div>
+                    <div className="text-[11.5px] mt-0.5" style={{ color: "var(--ink-soft)" }}>Flats, houses &amp; buy-to-let</div>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#cbd5e1" }} />
+                </button>
+                <button
+                  onClick={() => setQuoteMode("commercial")}
+                  className="flex items-center gap-3.5 w-full rounded-xl border px-4 py-3.5 text-left transition-all hover:border-[var(--navy)]"
+                  style={{ borderColor: "var(--line)", background: "white" }}
+                >
+                  <div className="h-[38px] w-[38px] rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: "#eff3fc" }}>
+                    <Building2 className="h-[18px] w-[18px]" style={{ color: "var(--navy)" }} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[13.5px] font-bold" style={{ color: "var(--navy-deep)" }}>Commercial &amp; HMO</div>
+                    <div className="text-[11.5px] mt-0.5" style={{ color: "var(--ink-soft)" }}>Offices, HMOs &amp; managed properties</div>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#cbd5e1" }} />
+                </button>
+              </div>
+              {/* Footer strip */}
+              <div className="-mx-6 -mb-6 mt-5 px-5 py-3 border-t text-center text-[11.5px]" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
+                Fixed prices · All 32 London boroughs · Takes 60 seconds
+              </div>
+            </>
+          )}
+
+          {/* ── Path A: Residential calculator ── */}
+          {quoteMode === "residential" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <button onClick={() => setQuoteMode("entry")} className="flex items-center gap-1 text-[12px] font-medium hover:opacity-70 transition-opacity" style={{ color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+                  <ChevronLeft className="h-3.5 w-3.5" /> Change
+                </button>
+                <div className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "var(--emerald-deep)" }}>
+                  <Home className="h-3.5 w-3.5" /> Residential
+                </div>
+              </div>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Instant quote</div>
+              <div className="mt-1 text-lg font-semibold">What do you need?</div>
+
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                {SERVICES.map((s) => {
+                  const on = selected.includes(s.code);
+                  const Icon = s.icon;
+                  return (
+                    <button
+                      key={s.code}
+                      onClick={() => toggle(s.code)}
+                      className="rounded-lg border p-3 text-left transition-all"
+                      style={{
+                        borderColor: on ? "var(--emerald-deep)" : "var(--line)",
+                        background: on ? "color-mix(in oklab, var(--emerald) 8%, white)" : "white",
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" style={{ color: on ? "var(--emerald-deep)" : "var(--ink-soft)" }} />
+                        <div className="text-[13px] font-semibold">{s.name}</div>
+                      </div>
+                      <div className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>from £{s.price} · {s.turn}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-5">
+                <label className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Property postcode</label>
+                <input
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value.toUpperCase())}
+                  placeholder="e.g. SW11 4NP"
+                  className="mt-1.5 w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-[var(--emerald-deep)]"
+                  style={{ borderColor: "var(--line)" }}
+                />
+              </div>
+
+              <div className="mt-5 flex items-end justify-between border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                <div>
+                  <div className="text-xs" style={{ color: "var(--ink-soft)" }}>
+                    {selected.length} cert{selected.length === 1 ? "" : "s"} selected
+                  </div>
+                  <div className="text-3xl font-bold tracking-tight" style={{ color: "var(--navy-deep)" }}>£{total}</div>
+                </div>
+                <Link to="/book" search={{ s: selected.join(",") }} className="rounded-lg px-5 py-3 text-sm font-semibold text-white" style={{ background: "var(--navy)" }}>
+                  Book engineer →
+                </Link>
+              </div>
+            </>
+          )}
+
+          {/* ── Path B: Commercial quote form ── */}
+          {quoteMode === "commercial" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <button onClick={() => setQuoteMode("entry")} className="flex items-center gap-1 text-[12px] font-medium hover:opacity-70 transition-opacity" style={{ color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+                  <ChevronLeft className="h-3.5 w-3.5" /> Change
+                </button>
+                <div className="flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "var(--navy)" }}>
+                  <Building2 className="h-3.5 w-3.5" /> Commercial &amp; HMO
+                </div>
+              </div>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Get a fixed quote</div>
+              <div className="mt-1 text-lg font-semibold">Tell us what you need</div>
+              <p className="mt-1 text-[13px]" style={{ color: "var(--ink-soft)" }}>
+                Prices depend on size and spec. Tell us what you need and we'll call with a fixed price within 2 hours.
+              </p>
+
+              <div className="mt-5 space-y-4">
+                <div>
+                  <label className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Certificate type</label>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {["Emergency Lighting", "Fire Alarm Testing", "Commercial EICR", "Not sure / multiple"].map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setCommCertType(t)}
+                        className="rounded-lg border p-2.5 text-left text-[12px] font-medium transition-all"
+                        style={{
+                          borderColor: commCertType === t ? "var(--navy)" : "var(--line)",
+                          background: commCertType === t ? "color-mix(in oklab, var(--navy) 6%, white)" : "white",
+                          color: commCertType === t ? "var(--navy-deep)" : "var(--ink)",
+                        }}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Property type</label>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {[
+                      { label: "HMO", sub: "up to 6 beds" },
+                      { label: "Commercial", sub: "office / retail" },
+                      { label: "Large site", sub: "multi-unit" },
+                    ].map(({ label, sub }) => (
+                      <button
+                        key={label}
+                        onClick={() => setCommPropType(label)}
+                        className="rounded-lg border p-2.5 text-center transition-all"
+                        style={{
+                          borderColor: commPropType === label ? "var(--navy)" : "var(--line)",
+                          background: commPropType === label ? "color-mix(in oklab, var(--navy) 6%, white)" : "white",
+                        }}
+                      >
+                        <div className="text-[12px] font-semibold" style={{ color: commPropType === label ? "var(--navy-deep)" : "var(--ink)" }}>{label}</div>
+                        <div className="text-[10px] mt-0.5" style={{ color: "var(--ink-soft)" }}>{sub}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium" style={{ color: "var(--ink-soft)" }}>Property postcode</label>
+                  <input
+                    value={commPostcode}
+                    onChange={(e) => setCommPostcode(e.target.value.toUpperCase())}
+                    placeholder="e.g. EC1A 1BB"
+                    className="mt-1.5 w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-[var(--navy)]"
+                    style={{ borderColor: "var(--line)" }}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                <a
+                  href="tel:02037725959"
+                  className="block w-full rounded-lg py-3 text-center text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: "var(--navy)" }}
+                >
+                  Request a quote →
+                </a>
+                <p className="mt-2 text-center text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                  We'll call you within 2 hours · Mon–Fri 9am–5pm
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -535,7 +874,7 @@ function DirectionA() {
               <AccredBadge logo={gasSafeLogo} name="Gas Safe" sub="Reg. No. 552272" />
               <AccredBadge logo={napitLogo} name="NAPIT" sub="Certified" />
               <AccredBadge logo={stromaLogo} name="Stroma" sub="Certified" />
-              <AccredBadge logo={trustmarkLogo} name="TrustMark" sub="Gov. Endorsed" />
+              <AccredBadge logo={trustmarkLogo} name="TrustMark" sub="Gov. Endorsed" imgClass="h-16 w-16" />
             </div>
 
             {/* Trustpilot badge */}
@@ -651,7 +990,7 @@ function DirectionA() {
                     <div>
                       <div className="text-xs" style={{ color: "var(--ink-soft)" }}>{s.pricingNote}</div>
                     </div>
-                    <a href="tel:02037725959" className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Book →</a>
+                    <Link to="/book" search={{ s: s.code }} className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Book online →</Link>
                   </div>
                 </div>
               </div>
@@ -784,13 +1123,14 @@ function DirectionA() {
                     </div>
 
                     {/* CTA */}
-                    <a
-                      href="tel:02037725959"
+                    <Link
+                      to="/book"
+                      search={{ s: d.codes ?? "" }}
                       className="mt-6 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
                       style={{ background: "linear-gradient(135deg, #d4a017, #b8860b)", boxShadow: "0 4px 20px rgba(212,160,23,0.35)" }}
                     >
                       Book this bundle <ArrowRight className="h-4 w-4" />
-                    </a>
+                    </Link>
                   </div>
 
                   {/* Bottom progress bar / urgency strip */}
@@ -956,7 +1296,7 @@ function DirectionA() {
           </p>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
-              { n: "01", t: "Choose & quote", d: "Pick the certificates you need for a live price, or call us and we'll find the earliest slot at your property.", icon: ClipboardCheck },
+              { n: "01", t: "Choose & quote", d: "Pick the certificates you need for an instant price. Select your date and time slot — booked in under 60 seconds with instant on-screen confirmation.", icon: ClipboardCheck },
               { n: "02", t: "Engineer visits", d: "A Gas Safe or NAPIT-registered engineer attends at your chosen time, covering every London borough.", icon: CalendarClock },
               { n: "03", t: "Certificate delivered", d: "Your signed PDF arrives by email within 24 hours, stored securely in your landlord portal and shareable in one click.", icon: Mail },
             ].map(({ n, t, d, icon: Icon }) => (
@@ -1156,7 +1496,12 @@ function DirectionA() {
                     <div className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>LC Assistant</div>
                     <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--ink-soft)" }}>
                       <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--emerald)" }} />
-                      Online · replies instantly
+                      Instant replies · 24/7
+                      <span style={{ color: "var(--line)", margin: "0 2px" }}>|</span>
+                      <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: isBusinessHours ? "var(--emerald)" : "#94a3b8" }} />
+                      <span style={{ color: isBusinessHours ? "var(--emerald-deep)" : "#94a3b8" }}>
+                        {isBusinessHours ? "Agents online" : "Agents back 9am"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1220,10 +1565,10 @@ function DirectionA() {
                         {msg.canvas && (
                           <button
                             onClick={() => setActiveCanvas(msg.canvas!)}
-                            className="mt-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all hover:scale-[1.02]"
-                            style={{ background: "color-mix(in oklab, var(--emerald) 8%, white)", border: "1px solid color-mix(in oklab, var(--emerald) 20%, white)", color: "var(--emerald-deep)" }}
+                            className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold hover:opacity-75 transition-opacity"
+                            style={{ color: "var(--navy)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}
                           >
-                            <ChevronRight className="h-3.5 w-3.5" /> View details
+                            View result <ChevronRight className="h-3 w-3" />
                           </button>
                         )}
                       </div>
@@ -1241,21 +1586,14 @@ function DirectionA() {
               ))}
               {!handoffActive && messages.length === 1 && !chatLoading && (
                 <div className="flex flex-wrap gap-2 pl-10 pt-1">
-                  {[
-                    { label: "See my certificate", message: "Can I see my gas safety certificate?" },
-                    { label: "Get a quote", message: "How much for a 2-bed Gas Safety with 3 appliances?" },
-                    { label: "Check coverage", message: "Do you cover SW18?" },
-                    { label: "Book a slot", message: "Can I book now?" },
-                    { label: "When is mine due?", message: "When is my gas safety certificate due?" },
-                    { label: "What's a C2 code?", message: "My EICR says C2 — what does that mean?" },
-                  ].map(({ label, message }) => (
+                  {CHAT_PILLS.map((pill) => (
                     <button
-                      key={label}
-                      onClick={() => sendMessage(message)}
+                      key={pill.label}
+                      onClick={() => handlePill(pill)}
                       className="rounded-full px-3 py-1.5 text-[12px] font-medium transition-all hover:scale-[1.02]"
                       style={{ background: "color-mix(in oklab, var(--emerald) 8%, white)", border: "1px solid color-mix(in oklab, var(--emerald) 20%, white)", color: "var(--emerald-deep)" }}
                     >
-                      {label}
+                      {pill.label}
                     </button>
                   ))}
                 </div>
@@ -1272,6 +1610,21 @@ function DirectionA() {
               )}
               <div ref={chatEndRef} />
             </div>
+
+            {/* OOH callback form */}
+            {oohActive && (
+              <div className="mx-4 mb-3 rounded-2xl border p-4" style={{ borderColor: "var(--line)", background: "var(--cream)" }}>
+                <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: "var(--ink-soft)" }}>Request a callback</div>
+                <input placeholder="Your name" className="mb-2 w-full rounded-xl border px-3 py-2 text-[13px] outline-none" style={{ borderColor: "var(--line)", background: "white" }} />
+                <input placeholder="Phone number" className="mb-3 w-full rounded-xl border px-3 py-2 text-[13px] outline-none" style={{ borderColor: "var(--line)", background: "white" }} />
+                <button className="w-full rounded-xl py-2.5 text-[13px] font-bold text-white" style={{ background: "var(--navy-deep)" }}>
+                  Request callback →
+                </button>
+                <div className="mt-2 text-center text-[11px]" style={{ color: "var(--ink-soft)" }}>
+                  Or email <a href="mailto:info@landlord-certificates.co.uk" style={{ color: "var(--navy)", fontWeight: 700 }}>info@landlord-certificates.co.uk</a>
+                </div>
+              </div>
+            )}
 
             {/* Composer */}
             <div className="p-3 flex-shrink-0">
@@ -1294,6 +1647,18 @@ function DirectionA() {
                   <Send className="h-4 w-4" />
                 </button>
               </div>
+              {!handoffActive && !oohActive && (
+                <div className="text-center mt-2">
+                  <button
+                    onClick={() => sendMessage("I'd like to speak to a person")}
+                    className="text-[11px] hover:opacity-80"
+                    style={{ color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}
+                  >
+                    Prefer to speak with someone?{" "}
+                    <span style={{ color: "var(--navy)", fontWeight: 700, textDecoration: "underline" }}>Connect me →</span>
+                  </button>
+                </div>
+              )}
               <div className="text-center text-[10px] mt-2" style={{ color: "var(--ink-soft)", opacity: 0.6 }}>
                 Powered by on-ai-rails
               </div>
@@ -1335,6 +1700,18 @@ function DirectionA() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function AccredBadge({ logo, name, sub, imgClass = "h-14 w-14" }: { logo: string; name: string; sub: string; imgClass?: string }) {
+  return (
+    <div className="flex items-center gap-2 flex-shrink-0">
+      <img src={logo} alt={name} className={`${imgClass} rounded object-contain`} />
+      <div>
+        <div className="text-[12px] font-semibold leading-tight" style={{ color: "var(--ink)" }}>{name}</div>
+        <div className="text-[11px] leading-tight" style={{ color: "var(--ink-soft)" }}>{sub}</div>
       </div>
     </div>
   );
@@ -1382,6 +1759,116 @@ function FixedDealPill() {
     </div>
   );
 }
+
+// ── Shared primitives ──────────────────────────────────────────────────────
+
+const divider: React.CSSProperties = {
+  height: 1,
+  background: "var(--line)",
+  margin: "10px 0 0",
+};
+
+const label: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  color: "var(--ink-soft)",
+  textTransform: "uppercase" as const,
+  letterSpacing: ".08em",
+  marginBottom: 3,
+};
+
+function CTA({
+  children,
+  onClick,
+  ghost,
+  color,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  ghost?: boolean;
+  color?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "block",
+        width: "100%",
+        marginTop: 12,
+        background: ghost ? "white" : color ?? "var(--emerald-deep)",
+        color: ghost ? "var(--navy-deep)" : "white",
+        border: ghost ? "1.5px solid var(--line)" : "none",
+        borderRadius: 11,
+        padding: "12px 16px",
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: "pointer",
+        textAlign: "center",
+        fontFamily: "inherit",
+        letterSpacing: ".01em",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FieldRow({ label: lbl, value, mono, warn }: { label: string; value: string; mono?: boolean; warn?: boolean }) {
+  return (
+    <div>
+      <div style={label}>{lbl}</div>
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: warn ? "oklch(0.52 0.17 27)" : "var(--ink)",
+          fontFamily: mono ? "'JetBrains Mono', ui-monospace, monospace" : "inherit",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Chip({ status }: { status: "valid" | "due" | "expired" }) {
+  const styles: Record<string, React.CSSProperties> = {
+    valid: {
+      background: "oklch(0.93 0.05 130)",
+      color: "var(--emerald-deep)",
+    },
+    due: {
+      background: "oklch(0.96 0.05 60)",
+      color: "oklch(0.50 0.17 55)",
+      border: "1px solid oklch(0.87 0.11 60)",
+    },
+    expired: {
+      background: "oklch(0.96 0.04 27)",
+      color: "oklch(0.46 0.20 28)",
+      border: "1px solid oklch(0.87 0.12 27)",
+    },
+  };
+  const labels = { valid: "Valid", due: "Due soon", expired: "Expired" };
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 800,
+        letterSpacing: ".06em",
+        textTransform: "uppercase",
+        padding: "3px 9px",
+        borderRadius: 99,
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+        ...styles[status],
+      }}
+    >
+      {labels[status]}
+    </span>
+  );
+}
+
+// ── Postcode lookup (unchanged from original) ──────────────────────────────
 
 const POSTCODE_ZONES: Record<string, { borough: string; zone: "same-day" | "next-day" }> = {
   E1:{borough:"Tower Hamlets",zone:"same-day"},E2:{borough:"Tower Hamlets",zone:"same-day"},E3:{borough:"Tower Hamlets",zone:"same-day"},E14:{borough:"Tower Hamlets",zone:"same-day"},
@@ -1432,11 +1919,14 @@ function lookupPostcode(raw: string): { borough: string; zone: "same-day" | "nex
   return null;
 }
 
+// ── Sub-components ─────────────────────────────────────────────────────────
+
 function CoverageCanvas({ data, onSend }: { data: Record<string, unknown>; onSend: (msg?: string) => void }) {
+  const navigate = useNavigate();
   const initial = data.postcode as string | undefined;
-  const [input, setInput] = useState(initial || "");
+  const [input, setInput] = useState(initial ?? "");
   const [result, setResult] = useState<{ borough: string; zone: "same-day" | "next-day"; covered: boolean } | null>(() => {
-    if (data.borough) return { borough: data.borough as string, zone: (data.zone as "same-day" | "next-day") || "next-day", covered: data.covered as boolean };
+    if (data.borough) return { borough: data.borough as string, zone: (data.zone as "same-day" | "next-day") ?? "next-day", covered: data.covered as boolean };
     if (initial) return lookupPostcode(initial);
     return null;
   });
@@ -1447,114 +1937,332 @@ function CoverageCanvas({ data, onSend }: { data: Record<string, unknown>; onSen
   }
 
   return (
-    <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
+    <div style={{ marginTop: 10 }}>
       {result && (
-        <div className="px-4 py-3 flex items-start gap-3" style={{ background: result.covered ? "color-mix(in oklab, var(--emerald) 5%, white)" : "rgba(220,38,38,0.04)", borderBottom: "1px solid rgba(15,30,60,0.06)" }}>
-          <div className="h-9 w-9 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: result.covered ? "var(--emerald-deep)" : "#dc2626" }}>
-            {result.covered ? <CheckCircle2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 10, borderBottom: "1px solid var(--line)" }}>
+          <div
+            style={{
+              width: 22, height: 22,
+              background: result.covered ? "var(--emerald-deep)" : "#dc2626",
+              borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            {result.covered
+              ? <CheckCircle2 style={{ width: 12, height: 12, color: "white" }} />
+              : <X style={{ width: 12, height: 12, color: "white" }} />}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>
-                {result.covered ? `We cover ${result.borough}` : "Outside our zone"}
-              </div>
-              {result.covered && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: result.zone === "same-day" ? "color-mix(in oklab, var(--emerald) 15%, white)" : "color-mix(in oklab, var(--navy) 8%, white)", color: result.zone === "same-day" ? "var(--emerald-deep)" : "var(--navy)" }}>
-                  {result.zone === "same-day" ? "Same-day" : "Next-day"}
-                </span>
-              )}
-            </div>
-            <div className="text-[11px] mt-0.5" style={{ color: "var(--ink-soft)" }}>
-              {result.covered ? (result.zone === "same-day" ? "Inner London · engineers based nearby" : "Outer London · next-day slots available") : "Call 0203 772 5959 to confirm"}
-            </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", flex: 1 }}>
+            {result.covered ? `${result.borough}` : "Outside our zone"}
           </div>
+          {result.covered && (
+            <span
+              style={{
+                fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em",
+                background: result.zone === "same-day" ? "oklch(0.93 0.05 130)" : "var(--navy-faint)",
+                color: result.zone === "same-day" ? "var(--emerald-deep)" : "var(--navy)",
+                padding: "3px 9px", borderRadius: 99,
+              }}
+            >
+              {result.zone === "same-day" ? "Same-day" : "Next-day"}
+            </span>
+          )}
         </div>
       )}
-      {result?.covered && (
-        <button onClick={() => onSend("I'd like to book")} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)", borderBottom: "1px solid rgba(15,30,60,0.06)" }}>
-          Book now →
-        </button>
-      )}
-      <div className="px-4 py-3 bg-white">
-        {!result && <div className="text-[12px] mb-2 font-medium" style={{ color: "var(--ink)" }}>Check your postcode</div>}
-        {result && <div className="text-[11px] mb-2" style={{ color: "var(--ink-soft)" }}>Check another postcode</div>}
-        <div className="flex gap-2">
-          <input value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && check()} placeholder="e.g. SW11 2AB"
-            className="flex-1 rounded-xl border px-3 py-2 text-[13px] outline-none focus:border-[var(--navy)] tracking-wide" style={{ borderColor: "rgba(15,30,60,0.12)" }} />
-          <button onClick={check} disabled={!input.trim()} className="rounded-xl px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-30" style={{ background: "var(--navy)" }}>Check</button>
+
+      {/* Postcode input */}
+      <div style={{ paddingTop: 10 }}>
+        {!result && <div style={{ fontSize: 11, color: "var(--ink-soft)", marginBottom: 7 }}>Check your postcode</div>}
+        {result && <div style={{ fontSize: 11, color: "var(--ink-soft)", marginBottom: 7 }}>Check another postcode</div>}
+        <div style={{ display: "flex", gap: 6 }}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && check()}
+            placeholder="e.g. SW11 2AB"
+            style={{
+              flex: 1, background: "oklch(0.97 0.006 256)",
+              border: "1.5px solid var(--line)", borderRadius: 9,
+              padding: "9px 12px", fontSize: 13, color: "var(--ink)",
+              outline: "none", fontFamily: "inherit",
+            }}
+          />
+          <button
+            onClick={check}
+            disabled={!input.trim()}
+            style={{
+              background: "var(--navy)", color: "white", border: "none",
+              borderRadius: 9, padding: "9px 14px", fontSize: 12,
+              fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            Check
+          </button>
         </div>
       </div>
+
+      {result?.covered && (
+        <CTA onClick={() => navigate({ to: "/book" as "/" })}>
+          Book in {result.borough} →
+        </CTA>
+      )}
     </div>
   );
 }
 
+function ApplianceCounter({ basePrice, perItem, onConfirm }: { basePrice: number; perItem: number; onConfirm: (count: number, total: number) => void }) {
+  const [counts, setCounts] = useState<Record<string, number>>({ Boiler: 1, "Hob / cooker": 0, "Gas fire": 0 });
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const price = basePrice + Math.max(0, total - 1) * perItem;
+
+  const subtitles: Record<string, string> = {
+    Boiler: "Combi / system / regular",
+    "Hob / cooker": "Gas hob, range or cooker",
+    "Gas fire": "Fireplace or gas fire",
+  };
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div style={divider} />
+      {Object.keys(counts).map((k, i, arr) => (
+        <div
+          key={k}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "10px 0",
+            borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{k}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 1 }}>{subtitles[k]}</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <button
+              onClick={() => setCounts((c) => ({ ...c, [k]: Math.max(0, c[k] - 1) }))}
+              style={{
+                width: 28, height: 28, border: "1.5px solid var(--line)",
+                background: "white", borderRadius: 8,
+                fontSize: 16, fontWeight: 700, color: "var(--ink)",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "inherit",
+              }}
+            >
+              −
+            </button>
+            <div style={{ width: 30, textAlign: "center", fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>
+              {counts[k]}
+            </div>
+            <button
+              onClick={() => setCounts((c) => ({ ...c, [k]: c[k] + 1 }))}
+              style={{
+                width: 28, height: 28,
+                background: "var(--emerald-deep)", border: "1.5px solid var(--emerald-deep)",
+                borderRadius: 8, fontSize: 16, fontWeight: 700, color: "white",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "inherit",
+              }}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "10px 0 0", borderTop: "1px solid var(--line)", marginTop: 4 }}>
+        <div style={{ fontSize: 12, color: "var(--ink-soft)", fontWeight: 600 }}>{total} appliance{total === 1 ? "" : "s"}</div>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "var(--emerald-deep)", letterSpacing: "-.02em" }}>£{price}</div>
+      </div>
+
+      <CTA onClick={() => onConfirm(total, price)}>Book Gas Safety at £{price} →</CTA>
+    </div>
+  );
+}
+
+function BookingSlots({ service, onConfirm }: { service: string; onConfirm: (slot: string) => void }) {
+  const days = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i + 1);
+    return {
+      key: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" }),
+    };
+  });
+  const windows = ["8:00 – 11:00 am", "11:00 am – 2:00 pm", "2:00 – 5:00 pm"];
+  const [pickedDay, setPickedDay] = useState(days[0].key);
+  const [pickedTime, setPickedTime] = useState(windows[0]);
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div style={divider} />
+
+      {/* Day strip */}
+      <div style={{ display: "flex", gap: 5, padding: "8px 0 10px", borderBottom: "1px solid var(--line)", overflowX: "auto" }}>
+        {days.map((d) => (
+          <button
+            key={d.key}
+            onClick={() => setPickedDay(d.key)}
+            style={{
+              padding: "7px 13px", borderRadius: 9,
+              fontSize: 12, fontWeight: 700,
+              background: pickedDay === d.key ? "var(--navy-deep)" : "white",
+              color: pickedDay === d.key ? "white" : "var(--ink)",
+              border: pickedDay === d.key ? "1.5px solid var(--navy-deep)" : "1.5px solid var(--line)",
+              cursor: "pointer", flexShrink: 0, fontFamily: "inherit",
+            }}
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Time slots */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "10px 0 2px" }}>
+        {windows.map((w) => {
+          const active = pickedTime === w;
+          return (
+            <button
+              key={w}
+              onClick={() => setPickedTime(w)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "10px 12px", borderRadius: 10,
+                border: active ? "1.5px solid var(--navy-deep)" : "1.5px solid var(--line)",
+                background: active ? "oklch(0.97 0.012 255)" : "white",
+                cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: active ? 700 : 600, color: active ? "var(--navy-deep)" : "var(--ink)" }}>
+                {w}
+              </span>
+              <div
+                style={{
+                  width: 16, height: 16, borderRadius: "50%",
+                  border: active ? "none" : "2px solid var(--line)",
+                  background: active ? "var(--navy-deep)" : "transparent",
+                  boxShadow: active ? "inset 0 0 0 3px white" : "none",
+                  flexShrink: 0,
+                }}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      <CTA onClick={() => onConfirm(`${days.find((d) => d.key === pickedDay)?.label}, ${pickedTime}`)}>
+        Confirm {days.find((d) => d.key === pickedDay)?.label}, {pickedTime} →
+      </CTA>
+    </div>
+  );
+}
+
+// ── ChatCanvas ─────────────────────────────────────────────────────────────
+
 type CanvasProps = { canvas: { type: string; data: Record<string, unknown> }; onSend: (msg?: string) => void };
 
 function ChatCanvas({ canvas, onSend }: CanvasProps) {
+  const navigate = useNavigate();
+
+  // ── price-calculator ────────────────────────────────────────────────────
   if (canvas.type === "price-calculator") {
-    const services = (canvas.data.services as Array<{ name: string; price: string }>) || [];
-    const total = services.reduce((a, s) => a + (parseInt(String(s.price).replace(/[^0-9]/g, ""), 10) || 0), 0);
+    const services = (canvas.data.services as Array<{ name: string; price: string }>) ?? [];
+    const total = services.reduce((a, s) => a + (parseInt(String(s.price).replace(/\D/g, ""), 10) || 0), 0);
     return (
-      <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid color-mix(in oklab, var(--emerald) 18%, white)" }}>
-        <div className="px-4 py-3" style={{ background: "color-mix(in oklab, var(--emerald) 6%, white)" }}>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--emerald-deep)" }}>Live quote</div>
-          {services.map((s) => (
-            <div key={s.name} className="flex justify-between text-[13px] py-1.5 border-b last:border-0" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
-              <span style={{ color: "var(--ink)" }}>{s.name}</span>
-              <span className="font-semibold" style={{ color: "var(--ink)" }}>{s.price}</span>
-            </div>
-          ))}
-          <div className="flex justify-between text-[14px] pt-2 mt-1 font-bold">
-            <span>Total</span><span style={{ color: "var(--emerald-deep)" }}>£{total}</span>
+      <div style={{ marginTop: 2 }}>
+        <div style={divider} />
+        {services.map((s, i) => (
+          <div
+            key={s.name}
+            style={{
+              display: "flex", justifyContent: "space-between", alignItems: "baseline",
+              padding: "9px 0",
+              borderBottom: i < services.length - 1 ? "1px solid var(--line)" : "none",
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{s.name}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{s.price}</span>
           </div>
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0 0", borderTop: "1px solid var(--line)", marginTop: 4 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--ink-soft)" }}>Total</span>
+          <span style={{ fontSize: 26, fontWeight: 900, color: "var(--emerald-deep)", letterSpacing: "-.02em" }}>£{total}</span>
         </div>
-        <button onClick={() => onSend("I'd like to book this")} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>
-          Book at this price →
-        </button>
+        <CTA onClick={() => navigate({ to: "/book" as "/" })}>Book at this price →</CTA>
       </div>
     );
   }
 
+  // ── appliance-counter ───────────────────────────────────────────────────
   if (canvas.type === "appliance-counter") {
-    return <ApplianceCounter basePrice={(canvas.data.basePrice as number) ?? 40} perItem={(canvas.data.perItem as number) ?? 10} onConfirm={(p, total) => onSend(`Book Gas Safety, ${p} appliances, total £${total}`)} />;
+    return (
+      <ApplianceCounter
+        basePrice={(canvas.data.basePrice as number) ?? 40}
+        perItem={(canvas.data.perItem as number) ?? 10}
+        onConfirm={(count, price) => onSend(`Book Gas Safety, ${count} appliance${count === 1 ? "" : "s"}, total £${price}`)}
+      />
+    );
   }
 
+  // ── booking-slots ───────────────────────────────────────────────────────
   if (canvas.type === "booking-slots") {
-    return <BookingSlots service={(canvas.data.service as string) ?? "Inspection"} onConfirm={(slot) => onSend(`Booked: ${slot}`)} />;
+    const service = (canvas.data.service as string) ?? "";
+    const code =
+      service.toLowerCase().includes("gas") ? "CP12"
+      : service.toLowerCase().includes("eicr") || service.toLowerCase().includes("electric") ? "EICR"
+      : service.toLowerCase().includes("epc") ? "EPC"
+      : service.toLowerCase().includes("pat") ? "PAT"
+      : "";
+    return (
+      <BookingSlots
+        service={service}
+        onConfirm={(slot) => navigate({ to: (code ? `/book?s=${code}` : "/book") as "/" })}
+      />
+    );
   }
 
+  // ── coverage-result ─────────────────────────────────────────────────────
   if (canvas.type === "coverage-result") {
     return <CoverageCanvas data={canvas.data} onSend={onSend} />;
   }
 
+  // ── certificate-preview ─────────────────────────────────────────────────
   if (canvas.type === "certificate-preview") {
     const c = canvas.data as { type: string; address: string; engineer: string; gasSafeNo: string; issued: string; expires: string; status: string };
     const pass = c.status?.toLowerCase().includes("pass");
     return (
-      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.1)", boxShadow: "0 8px 24px -12px rgba(15,30,60,0.15)" }}>
-        <div className="px-4 py-3 flex items-center justify-between" style={{ background: "var(--navy-deep)", color: "white" }}>
+      <div style={{ marginTop: 2 }}>
+        <div style={divider} />
+        {/* Address + status */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, padding: "6px 0 10px" }}>
           <div>
-            <div className="text-[10px] uppercase tracking-[0.15em] opacity-60">Certificate</div>
-            <div className="text-[13px] font-semibold">{c.type}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{c.address}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 2 }}>{c.type}</div>
           </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: pass ? "var(--emerald)" : "#ef4444", color: pass ? "#052e16" : "white" }}>{c.status}</span>
+          <span
+            style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase",
+              padding: "3px 9px", borderRadius: 99, marginTop: 2, flexShrink: 0,
+              background: pass ? "oklch(0.93 0.05 130)" : "oklch(0.96 0.04 27)",
+              color: pass ? "var(--emerald-deep)" : "oklch(0.46 0.20 28)",
+            }}
+          >
+            {pass ? "✓ Pass" : "✗ Fail"}
+          </span>
         </div>
-        <div className="p-4 space-y-2 text-[12px]">
-          <Row label="Property" value={c.address} />
-          <Row label="Engineer" value={c.engineer} />
-          <Row label="Gas Safe №" value={c.gasSafeNo} />
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <Row label="Issued" value={c.issued} />
-            <Row label="Expires" value={c.expires} />
-          </div>
+        {/* Field grid */}
+        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 16px", paddingBottom: 10 }}>
+          <FieldRow label="Engineer" value={c.engineer} />
+          <FieldRow label="Gas Safe №" value={c.gasSafeNo} mono />
+          <FieldRow label="Issued" value={c.issued} />
+          <FieldRow label="Expires" value={c.expires} warn />
         </div>
-        <button className="w-full py-2.5 text-[13px] font-semibold border-t" style={{ borderColor: "rgba(15,30,60,0.08)", color: "var(--emerald-deep)" }}>
-          ↓ Download PDF
-        </button>
+        <CTA ghost>↓ Download PDF</CTA>
       </div>
     );
   }
 
+  // ── renewal-timeline ────────────────────────────────────────────────────
   if (canvas.type === "renewal-timeline") {
     const { cert, lastDone, dueDate, validity } = canvas.data as { cert: string; lastDone: string; dueDate: string; validity: string };
     const issued = new Date(lastDone);
@@ -1562,98 +2270,130 @@ function ChatCanvas({ canvas, onSend }: CanvasProps) {
     const today = new Date();
     const totalMs = due.getTime() - issued.getTime();
     const elapsedMs = today.getTime() - issued.getTime();
-    const progressPct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+    const pct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
     const daysLeft = Math.round((due.getTime() - today.getTime()) / 86400000);
     const overdue = daysLeft < 0;
     const urgent = !overdue && daysLeft <= 30;
-    const accentColor = overdue ? "#dc2626" : urgent ? "#ea580c" : "var(--emerald-deep)";
-    const badgeText = overdue ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`;
+    const accent = overdue ? "oklch(0.46 0.20 28)" : urgent ? "oklch(0.52 0.17 27)" : "var(--emerald-deep)";
+    const code = cert.includes("Gas") ? "CP12" : cert.includes("EPC") ? "EPC" : cert.includes("PAT") ? "PAT" : "EICR";
+
     return (
-      <div className="mt-3 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
-        <div className="px-4 pt-3 pb-3 bg-white">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[12px] font-semibold" style={{ color: "var(--ink)" }}>{cert} · valid {validity}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: accentColor }}>{badgeText}</span>
-          </div>
-          <div className="relative h-1.5 rounded-full" style={{ background: "rgba(15,30,60,0.08)" }}>
-            <div className="absolute left-0 top-0 h-1.5 rounded-full" style={{ width: `${progressPct}%`, background: accentColor }} />
-            {progressPct > 0 && progressPct < 100 && (
-              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow" style={{ left: `calc(${progressPct}% - 6px)`, background: accentColor }} />
-            )}
-          </div>
-          <div className="flex justify-between text-[10px] mt-1.5" style={{ color: "var(--ink-soft)" }}>
-            <span>Issued {lastDone}</span><span>Due {dueDate}</span>
+      <div style={{ marginTop: 2 }}>
+        <div style={divider} />
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "6px 0 12px" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{cert} · {validity}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent }}>
+            {overdue ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
           </div>
         </div>
-        <button onClick={() => onSend(`Book ${cert} renewal`)} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: accentColor }}>
+        {/* Progress bar */}
+        <div style={{ position: "relative", height: 5, background: "var(--line)", borderRadius: 99, marginBottom: 8 }}>
+          <div style={{ position: "absolute", left: 0, top: 0, height: 5, width: `${pct}%`, background: `linear-gradient(to right, var(--emerald-deep), ${accent})`, borderRadius: 99 }} />
+          {pct > 2 && pct < 100 && (
+            <div style={{ position: "absolute", top: "50%", left: `${pct}%`, transform: "translate(-50%,-50%)", width: 11, height: 11, background: accent, border: "2px solid white", borderRadius: "50%", boxShadow: "0 1px 4px rgba(0,0,0,.18)" }} />
+          )}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: "var(--ink-soft)" }}>Issued {lastDone}</div>
+          <div style={{ fontSize: 11, color: accent, fontWeight: 600 }}>Due {dueDate}</div>
+        </div>
+        <CTA color={accent} onClick={() => navigate({ to: `/book?s=${code}` as "/" })}>
           Book renewal →
-        </button>
+        </CTA>
       </div>
     );
   }
 
+  // ── eicr-codes ──────────────────────────────────────────────────────────
   if (canvas.type === "eicr-codes") {
     const code = ((canvas.data.code as string) ?? "C2").toUpperCase();
-    const map: Record<string, { color: string; label: string; desc: string }> = {
-      C1: { color: "#dc2626", label: "Danger present", desc: "Immediate risk to people. Engineer must make safe right away." },
-      C2: { color: "#ea580c", label: "Potentially dangerous", desc: "Urgent remedial work required. Certificate marked unsatisfactory." },
-      C3: { color: "#16a34a", label: "Improvement recommended", desc: "Not a fail. Improvement suggested but installation is still safe." },
-      FI: { color: "#0ea5e9", label: "Further investigation", desc: "Engineer needs to investigate further to determine if remedial work is required." },
+    const map: Record<string, { color: string; bg: string; border: string; label: string; desc: string }> = {
+      C1: { color: "oklch(0.46 0.20 28)", bg: "oklch(0.96 0.06 28)", border: "oklch(0.87 0.14 28)", label: "Danger present", desc: "Immediate risk to people. Engineer makes safe on the spot." },
+      C2: { color: "oklch(0.52 0.17 27)", bg: "oklch(0.96 0.05 27)", border: "oklch(0.87 0.11 27)", label: "Potentially dangerous", desc: "Urgent remedial work required. Certificate is unsatisfactory until fixed." },
+      C3: { color: "var(--emerald-deep)", bg: "oklch(0.96 0.04 130)", border: "oklch(0.88 0.10 130)", label: "Improvement recommended", desc: "Not a fail. The installation is safe; improvement is optional." },
+      FI: { color: "var(--navy)", bg: "var(--navy-faint)", border: "oklch(0.88 0.02 255)", label: "Further investigation", desc: "Engineer needs more access or testing before a decision can be made." },
     };
     const c = map[code] ?? map.C2;
+    const allCodes = ["C1", "C2", "C3", "FI"];
+
     return (
-      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
-        <div className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-[16px]" style={{ background: c.color }}>{code}</div>
-            <div>
-              <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{c.label}</div>
-              <div className="text-[11px]" style={{ color: "var(--ink-soft)" }}>EICR observation code</div>
-            </div>
+      <div style={{ marginTop: 2 }}>
+        <div style={divider} />
+        {/* Code hero */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0 12px" }}>
+          <div
+            style={{
+              width: 48, height: 48, background: c.bg, borderRadius: 12,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0, border: `1.5px solid ${c.border}`,
+            }}
+          >
+            <span style={{ fontSize: 20, fontWeight: 900, color: c.color, fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>{code}</span>
           </div>
-          <p className="text-[12px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>{c.desc}</p>
-          <div className="flex gap-1 mt-3">
-            {["C1", "C2", "C3", "FI"].map((k) => (
-              <div key={k} className="flex-1 h-1.5 rounded-full" style={{ background: k === code ? map[k].color : "rgba(15,30,60,0.08)" }} />
-            ))}
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>{c.label}</div>
+            <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 3, lineHeight: 1.5 }}>{c.desc}</div>
+          </div>
+        </div>
+        {/* Severity scale */}
+        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10, paddingBottom: 4 }}>
+          <div style={{ display: "flex", gap: 3 }}>
+            {allCodes.map((k) => {
+              const m = map[k];
+              const active = k === code;
+              return (
+                <div key={k} style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ height: 4, background: active ? m.color : "var(--line)", borderRadius: 4, marginBottom: 5 }} />
+                  <div style={{ fontSize: 10, fontWeight: 800, color: active ? m.color : "var(--ink-soft)", fontFamily: "ui-monospace, monospace" }}>{k}</div>
+                  <div style={{ fontSize: 9, color: "var(--ink-soft)", lineHeight: 1.3, marginTop: 1 }}>
+                    {k === "C1" ? "Danger" : k === "C2" ? "Urgent" : k === "C3" ? "Advisory" : "Investigate"}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
         {code !== "C3" && (
-          <button onClick={() => onSend("Get a remedial quote")} className="w-full py-2.5 text-[13px] font-semibold text-white border-t" style={{ background: c.color, borderColor: "rgba(15,30,60,0.08)" }}>
-            Get remedial quote →
-          </button>
+          <CTA color={c.color} onClick={() => onSend("Get a remedial quote")}>Get remedial quote →</CTA>
         )}
       </div>
     );
   }
 
+  // ── portfolio-table ─────────────────────────────────────────────────────
   if (canvas.type === "portfolio-table") {
     const props = (canvas.data.properties as Array<{ address: string; cert: string; status: string; expires: string }>) ?? [];
-    const due = props.filter((p) => p.status === "due" || p.status === "expired").length;
+    const actionCount = props.filter((p) => p.status === "due" || p.status === "expired").length;
+
     return (
-      <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
-        <div className="px-4 py-2.5 flex items-center justify-between border-b" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
-          <span className="text-[12px] font-semibold" style={{ color: "var(--ink)" }}>{props.length} properties</span>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(234,88,12,0.1)", color: "#ea580c" }}>{due} need action</span>
-        </div>
-        <div className="divide-y" style={{ borderColor: "rgba(15,30,60,0.06)" }}>
-          {props.map((p, i) => {
-            const tone = p.status === "valid" ? { bg: "color-mix(in oklab, var(--emerald) 12%, white)", fg: "var(--emerald-deep)", label: "Valid" } : p.status === "due" ? { bg: "rgba(234,88,12,0.12)", fg: "#ea580c", label: "Due soon" } : { bg: "rgba(220,38,38,0.12)", fg: "#dc2626", label: "Expired" };
-            return (
-              <div key={i} className="px-4 py-2.5 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-[12px] font-medium truncate" style={{ color: "var(--ink)" }}>{p.address}</div>
-                  <div className="text-[10px]" style={{ color: "var(--ink-soft)" }}>{p.cert} · {p.expires}</div>
+      <div style={{ marginTop: 2 }}>
+        <div style={divider} />
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {props.map((p, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 0",
+                borderBottom: i < props.length - 1 ? "1px solid var(--line)" : "none",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {p.address}
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: tone.bg, color: tone.fg }}>{tone.label}</span>
+                <div style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 1 }}>
+                  {p.cert} · {p.expires}
+                </div>
               </div>
-            );
-          })}
+              <Chip status={p.status as "valid" | "due" | "expired"} />
+            </div>
+          ))}
         </div>
-        {due > 0 && (
-          <button onClick={() => onSend(`Book all ${due} due certificates`)} className="w-full py-2.5 text-[13px] font-semibold text-white border-t" style={{ background: "var(--emerald-deep)", borderColor: "rgba(15,30,60,0.06)" }}>
-            Book all {due} due →
-          </button>
+        {actionCount > 0 && (
+          <CTA onClick={() => onSend(`Book all ${actionCount} due certificates`)}>
+            Book all {actionCount} due →
+          </CTA>
         )}
       </div>
     );
@@ -1662,116 +2402,12 @@ function ChatCanvas({ canvas, onSend }: CanvasProps) {
   return null;
 }
 
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>{label}</div>
       <div className="text-[12px] font-medium" style={{ color: "var(--ink)" }}>{value}</div>
-    </div>
-  );
-}
-
-function ApplianceCounter({ basePrice, perItem, onConfirm }: { basePrice: number; perItem: number; onConfirm: (count: number, total: number) => void }) {
-  const [counts, setCounts] = useState<Record<string, number>>({ Boiler: 1, Hob: 0, Oven: 0, "Gas fire": 0 });
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const price = basePrice + Math.max(0, total - 1) * perItem;
-  return (
-    <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
-      <div className="p-4 space-y-2">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: "var(--emerald-deep)" }}>Appliance counter</div>
-        {Object.keys(counts).map((k) => (
-          <div key={k} className="flex items-center justify-between">
-            <span className="text-[13px]" style={{ color: "var(--ink)" }}>{k}</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setCounts((c) => ({ ...c, [k]: Math.max(0, c[k] - 1) }))} className="h-6 w-6 rounded-full text-[14px] font-bold" style={{ background: "rgba(15,30,60,0.06)", color: "var(--ink)" }}>−</button>
-              <span className="text-[13px] font-semibold w-4 text-center">{counts[k]}</span>
-              <button onClick={() => setCounts((c) => ({ ...c, [k]: c[k] + 1 }))} className="h-6 w-6 rounded-full text-[14px] font-bold text-white" style={{ background: "var(--emerald-deep)" }}>+</button>
-            </div>
-          </div>
-        ))}
-        <div className="flex justify-between items-baseline pt-2 mt-1 border-t" style={{ borderColor: "rgba(15,30,60,0.08)" }}>
-          <span className="text-[12px]" style={{ color: "var(--ink-soft)" }}>{total} appliance{total === 1 ? "" : "s"}</span>
-          <span className="text-[18px] font-bold" style={{ color: "var(--emerald-deep)" }}>£{price}</span>
-        </div>
-      </div>
-      <button onClick={() => onConfirm(total, price)} className="w-full py-2.5 text-[13px] font-semibold text-white" style={{ background: "var(--emerald-deep)" }}>
-        Book at £{price} →
-      </button>
-    </div>
-  );
-}
-
-function BookingSlots({ service, onConfirm }: { service: string; onConfirm: (slot: string) => void }) {
-  const [picked, setPicked] = useState<string | null>(null);
-  const days = Array.from({ length: 5 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i + 1);
-    return { key: d.toISOString().slice(0, 10), label: d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) };
-  });
-  const windows = ["8–11am", "11–2pm", "2–5pm"];
-  if (picked && picked === "_confirmed") {
-    return (
-      <div className="mt-3 rounded-2xl p-4 flex items-start gap-3" style={{ border: "1px solid color-mix(in oklab, var(--emerald) 25%, white)", background: "color-mix(in oklab, var(--emerald) 5%, white)" }}>
-        <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: "var(--emerald-deep)" }} />
-        <div>
-          <div className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>Booked — ref LC{Math.floor(Math.random() * 90000 + 10000)}</div>
-          <div className="text-[12px]" style={{ color: "var(--ink-soft)" }}>Confirmation sent to your email.</div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="mt-3 rounded-2xl overflow-hidden bg-white" style={{ border: "1px solid rgba(15,30,60,0.08)" }}>
-      <div className="p-4">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: "var(--emerald-deep)" }}>{service} · pick a slot</div>
-        <div className="space-y-2">
-          {days.map((d) => (
-            <div key={d.key}>
-              <div className="text-[11px] font-medium mb-1" style={{ color: "var(--ink-soft)" }}>{d.label}</div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {windows.map((w) => {
-                  const id = `${d.key}|${w}`;
-                  const active = picked === id;
-                  return (
-                    <button
-                      key={w}
-                      onClick={() => setPicked(id)}
-                      className="rounded-lg py-1.5 text-[11px] font-medium transition-colors"
-                      style={{
-                        background: active ? "var(--emerald-deep)" : "color-mix(in oklab, var(--navy) 4%, white)",
-                        color: active ? "white" : "var(--ink)",
-                        border: `1px solid ${active ? "var(--emerald-deep)" : "rgba(15,30,60,0.08)"}`,
-                      }}
-                    >
-                      {w}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <button
-        disabled={!picked}
-        onClick={() => { const slot = picked!; setPicked("_confirmed"); onConfirm(slot.replace("|", " · ")); }}
-        className="w-full py-2.5 text-[13px] font-semibold text-white disabled:opacity-40"
-        style={{ background: "var(--emerald-deep)" }}
-      >
-        Confirm booking →
-      </button>
-    </div>
-  );
-}
-
-function AccredBadge({ logo, name, sub }: { logo: string; name: string; sub: string }) {
-  return (
-    <div className="flex items-center gap-1 flex-shrink-0">
-      <img src={logo} alt={name} className="h-10 w-auto object-contain" />
-      <div className="leading-tight">
-        <div className="text-[12px] font-semibold whitespace-nowrap" style={{ color: "var(--ink)" }}>{name}</div>
-        <div className="text-[10px] whitespace-nowrap" style={{ color: "var(--ink-soft)" }}>{sub}</div>
-      </div>
     </div>
   );
 }
